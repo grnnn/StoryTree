@@ -1,0 +1,41 @@
+{
+	"characters" : ["Becky", "Trish"],
+	"characteristics" : 
+	[
+		{
+			"name" : "Becky", 
+			"class" : "feeling",
+			"type" : "happy",
+			"value" : 4
+		},
+		{
+			"name" : "Becky",
+			"class" : "likes eating",
+			"type" : "cookie",
+			"value" : true
+		},
+		{
+			"name" : "Trish", 
+			"class" : "feeling",
+			"type" : "sad",
+			"value" : 2
+		},
+		{
+			"name" : "Trish",
+			"class" : "likes eating",
+			"type" : "cookies",
+			"value" : false
+		},
+		{
+			"name" : "World", 
+			"class" : "location",
+			"type" : "underwater"
+		},
+		{
+			"name" : "Player",
+			"class" : "owns",
+			"type" : "cookie",
+			"value" : true
+		}
+	]
+}

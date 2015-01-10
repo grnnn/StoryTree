@@ -1,0 +1,112 @@
+[
+{
+	"name" : "Give Trish a Cookie",
+	"uid" : 15496,
+	"first" : true,
+	"preconditions" : 
+	[
+		{
+			"character" : "Player",
+			"class" : "owns",
+			"type" : "cookie",
+			"operation" : "==",
+			"value" : true
+		}
+	],
+	"expressions" :
+	[
+		{
+			"character" : "Trish",
+			"class" : "owns",
+			"type" : "cookie",
+			"operation" : "=",
+			"value" : true
+		},
+		{
+			"character" : "Player",
+			"class" : "owns",
+			"type" : "cookie",
+			"operation" : "=",
+			"value" : false
+		}
+	],
+	"leadsTo": 
+	[
+		15497, 15498
+	]
+},
+{
+	"name" : "Trish is Happy",
+	"uid" : 15497,
+	"first" : false,
+	"preconditions" :
+	[
+		{
+			"character" : "Trish",
+			"class" : "feeling",
+			"type" : "happy",
+			"operation" : ">",
+			"value" : 5
+		}
+	],
+	"leadsTo": 
+	[
+		15499, 15500
+	]
+},
+{
+	"name" : "Trish is Unhappy",
+	"uid" : 15498,
+	"first" : false,
+	"preconditions" :
+	[
+		{
+			"character" : "Trish",
+			"class" : "feeling",
+			"type" : "happy",
+			"operation" : "<",
+			"value" : 6
+		}
+	], 
+	"expressions" :
+	[
+		{
+			"character" : "Trish",
+			"class" : "feeling",
+			"type" : "angry",
+			"operation" : "+",
+			"value" : 2
+		}
+	]
+},
+{
+	"name" : "Trish likes cookies",
+	"uid" : 15499,
+	"first" : false,
+	"preconditions" :
+	[
+		{
+			"character" : "Trish",
+			"class" : "likes eating",
+			"type" : "cookie",
+			"operation" : "==",
+			"value" : true
+		}
+	]
+},
+{
+	"name" : "Trish doesn't like cookies",
+	"uid" : 15499,
+	"first" : false,
+	"preconditions" :
+	[
+		{
+			"character" : "Trish",
+			"class" : "likes eating",
+			"type" : "cookie",
+			"operation" : "==",
+			"value" : false
+		}
+	]
+}
+]

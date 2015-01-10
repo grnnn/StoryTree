@@ -18,5 +18,11 @@
 	"types" : ["cookie", "computer", "house"],
 	"isBoolean" : true,
 	"defaultVal" : true
+},
+{
+	"class" : "location",
+	"types" : ["underwater", "volcano"],
+	"isBoolean" : true,
+	"defaultVal" : true
 }
 ]
