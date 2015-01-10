@@ -85,7 +85,6 @@ var Character = function(name){
 
 	this.characteristics = {};
 	this.tree = {};
-	this.actionList = {};
 }
 
 //Character.addCharacteristic(String cls, String type, int min, int max, bool isBoolean, int or bool defaultVal)
@@ -116,5 +115,4 @@ Character.prototype.parseExpression = function(cls, type, operation, value){
 
 Character.prototype.setSpeakTree = function(tree){
 	this.tree = tree;
-
 }
