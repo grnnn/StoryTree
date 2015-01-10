@@ -1,0 +1,22 @@
+[
+{
+	"class" : "feeling",
+	"types" : ["happy", "sad", "angry"],
+	"isBoolean" : false,
+	"min" : 0,
+	"max" : 10,
+	"defaultVal" : 5
+},
+{
+	"class" : "likes eating",
+	"types" : ["cookie", "pasta", "pizza"],
+	"isBoolean" : true,
+	"defaultVal" : true
+},
+{
+	"class" : "owns",
+	"types" : ["cookie", "computer", "house"],
+	"isBoolean" : true,
+	"defaultVal" : true
+}
+]
