@@ -73,7 +73,48 @@ Characteristic.prototype.setVal = function(val){
 
 
 
-/*
+/*Character class, a character is an enitity that can have characteristics and a Speak Tree
 *
-*
-*/
+*	name(String) - Unique name of the character
+*	characteristics([Characteristics]) - Double Hash table containing the set of proper characteristics, hashing class and type
+*	tree(STree) - Actual STree for that character
+*	
+*/  
+var Character = function(name){
+	this.name = name;
+
+	this.characteristics = {};
+	this.tree = {};
+	this.actionList = {};
+}
+
+//Character.addCharacteristic(String cls, String type, int min, int max, bool isBoolean, int or bool defaultVal)
+//Sets up the double hash of the characteristic, and also creates a new corresponding Chracteristic
+//ARGUMENTS:
+//	cls(String) - SDBClass
+//	type(String) - Type of that class
+//	min(int) - minimum limit on value
+//	max(int) - maximum limit on value
+//	isBoolean(bool) - is the characteristic a boolean
+//	defaultVal(bool or int) - is the starting value of the characteristic
+//RETURN void
+Character.prototype.addCharacteristic = function(cls, type, min, max, isBoolean, defaultVal){
+	this.characteristics[cls] = {};
+	this.characteristics[cls][type] = new Characteristic(cls, type, min, max, isBoolean, defaultVal);
+}
+
+//Character.parseExpression(cls, type, operation, value)
+//Parses an expression on a characteristic, passed on to member
+//ARGUMENTS:
+//	cls(String) - SDBClass
+//	type(String) - Type of that class
+//	operation(String) - The way the expression is set
+//	value(int or bool) - What value is parsed
+Character.prototype.parseExpression = function(cls, type, operation, value){
+	this.characteristics[cls][type].parseExpression(operation, value);
+}
+
+Character.prototype.setSpeakTree = function(tree){
+	this.tree = tree;
+
+}
