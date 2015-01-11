@@ -39,6 +39,7 @@ var Expression = function(character, cls, type, operation, value){
 *	expressions([Expression]) - array of Expressions to evaluate when the action is completed
 *	children([int]) - child Action ids
 *	parent(int) - uid of the parent action
+*	class(String) - used to group actions together
 */
 var Action = function(name, uid){
 	this.name = name;
@@ -49,6 +50,8 @@ var Action = function(name, uid){
 
 	this.children = [];
 	this.parent = 0;
+
+	this.cls = ""; 
 }
 
 //Adds a precondtion to the action
@@ -69,6 +72,11 @@ Action.prototype.addChild = function(uid){
 //Sets the pointer to the parent uid
 Action.prototype.setParent = function(uid){
 	this.parent = uid;
+}
+
+//Sets the class of the action
+Action.prototype.setClass = function(cls){
+	this.cls = cls;
 }
 
 //Test to see if the Action is a leaf

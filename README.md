@@ -1,7 +1,7 @@
 StoryTree is an advanced game AI engine library inspired by UCSC's CiF.
 
 Features:
-=========
+=========  
   *As a game creator, you can use StoryTree to set up a flexible story space.  
   *StoryTree can set and track characteristics of characters, the game world, and the player.  
   *StoryTree uses a non-binary, layered tree structure to dynamically choose which actions can be performed.  
@@ -129,8 +129,8 @@ Preconditions are expressed by an SDB Value (class, type, value), a character, a
 
 Expressions change chracteristics of the StoryTree system. They are also represented as SDB values (class, type, value), a character, and an operator. The operation on the Expression describes how it changes a Characteristic (ex. "+", "-", "="). The character specifies which character's characteristic to change. Actions don't have to have an Expression.
 
-There are two main ways that the Action Tree is interacted with:
-  *Story Tree can retrieve a number of specified leaf (no children) actions from the Action class with the getActions() function. The Action Tree will only return leaf actions that have satisfied all of the preconditions of all preceding parents. (*Note*: If an Action is given a class, all child actions will inherit that class. No more than 1 action from the same class can be returned by the getOptions() function. This is a useful way to break your actions up into categories.)
+There are two main ways that the Action Tree is interacted with:  
+  *Story Tree can retrieve a number of specified leaf (no children) actions from the Action class with the getActions() function. The Action Tree will only return leaf actions that have satisfied all of the preconditions of all preceding parents. (*Note*: If an Action is given a class, all child actions will inherit that class. No more than 1 action from the same class can be returned by the getOptions() function. This is a useful way to break your actions up into categories.)  
   *Story Tree can execute a leaf Action that is accesible by way of getOptions(). You do this with the executeAction() function. This will resolve all expressions of the Action, and then also resolve all of the expressions of all of the parent Actions.
 
 Example JSON to populate Action Tree:

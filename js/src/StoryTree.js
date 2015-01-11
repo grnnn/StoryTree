@@ -1,3 +1,11 @@
+/* StoryTree class, the top class with all client functions
+*
+* 	SDB(SDB) - The SDB of the StoryTree
+* 	characters([Character]) - Array of characters that exist in the Story Tree
+* 	loadingSDB(bool) - true if SDB is loading
+*	loadingCharacters(bool) - true if Characters are loading
+*	loadingTree(bool) - true if Trees are loading
+*/
 var StoryTree = function(){
 	this.SDB = new SDB();
 	this.characters = [];
@@ -187,7 +195,12 @@ StoryTree.prototype.setTrees = function(path){
 
 		    	//Set the action's parent
 		    	actionObj.setParent(action.parent);
-		    	
+
+		    	//Set the action's class if it exists
+		    	if(action.class !== undefined){
+		    		actionObj.setParent(action.class);
+		    	}
+
 		    }
 
 		  }
@@ -317,11 +330,20 @@ StoryTree.prototype.getOptions = function(character, numOfOptions){
 			//If we do get a false value, move on in the loop
 			if(trig) continue;
 
+			//Now check if the class has been added to the list in the past
+			//If so, disregard this whole branch in our traversal
+			for(var k = 0; k < classes.length; k++){
+				if(classes[k] === actionObj.cls) continue;
+			}
+
 			//We can assume now that we've succesfully passed the preconditions
 			//If it's a leaf, we push it onto the return list and decrement the counter for max returns
 			//If not a leaf, we keep traversing
 			if(actionObj.isLeaf()){
 				uids.push(actionUID);
+				if(actionObj.cls !== ""){
+					classes.push(actionObj.cls);
+				}
 				counter--;
 			} else {
 				traverse(actionUID);
@@ -335,6 +357,7 @@ StoryTree.prototype.getOptions = function(character, numOfOptions){
 	//keep track of which actions we've added and how many were added
 	var uids = [];
 	var counter = numOfOptions;
+	var classes = [];
 	for(var j = 0; j < tree.firsts.length; j++){
 
 		
