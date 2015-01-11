@@ -109,3 +109,28 @@ STree.prototype.addFirst = function(uid){
 STree.prototype.mapAction = function(name, uid){
 	this.actions[uid] = new Action(name, uid);
 }
+
+//Sets the class of an action, given a class and a uid
+STree.prototype.setClass = function(uid, cls){
+
+	var that = this;
+
+	function setChildClass(uid){
+
+		var actionObj = that.actions[uid];
+
+		for(var i = 0; i < actionObj.children.length; i++){
+			var child = that.actions[actionObj.children[i]];
+
+			child.setClass(cls);
+
+			if(child.isLeaf()){
+				continue;
+			} else {
+				setChildClass(child.uid);
+			}
+		}
+	}
+
+	setChildClass(uid);
+}
