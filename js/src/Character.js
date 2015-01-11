@@ -120,6 +120,6 @@ Character.prototype.parseExpression = function(cls, type, operation, value){
 	}
 }
 
-Character.prototype.setSpeakTree = function(tree){
+Character.prototype.setStoryTree = function(tree){
 	this.tree = tree;
 }

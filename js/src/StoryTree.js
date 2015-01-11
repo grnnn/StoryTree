@@ -1,4 +1,4 @@
-var SpeakTree = function(){
+var StoryTree = function(){
 	this.SDB = new SDB();
 	this.characters = [];
 
@@ -7,12 +7,12 @@ var SpeakTree = function(){
 	this.loadingTree = false;
 };
 
-// SpeakTree.setSDB(String path)
-// Set up the SDB of the SpeakTree
+// StoryTree.setSDB(String path)
+// Set up the SDB of the StoryTree
 // ARGUMENTS:
 //	path(String) - the file path to the local json file representing the SDB
 // RETURN void
-SpeakTree.prototype.setSDB = function(path){
+StoryTree.prototype.setSDB = function(path){
 	var that = this;
 	var request = new XMLHttpRequest();
 	request.open('GET', path, true);
@@ -42,12 +42,12 @@ SpeakTree.prototype.setSDB = function(path){
 	request.send();
 };
 
-//SpeakTree.setChracters(String path)
-//Set up the characters of the SpeakTree
+//StoryTree.setChracters(String path)
+//Set up the characters of the StoryTree
 //ARGUMENTS:
 //	path(String) - the file path to the local json file representing the characters and the characteristics
 //RETURN void
-SpeakTree.prototype.setCharacters = function(path){
+StoryTree.prototype.setCharacters = function(path){
 	var that = this;
 	var request = new XMLHttpRequest();
 	request.open('GET', path, true);
@@ -102,12 +102,12 @@ SpeakTree.prototype.setCharacters = function(path){
 	request.send();
 };
 
-//SpeakTree.setTrees(String path)
-//Set up the the actual Trees of the SpeakTree
+//StoryTree.setTrees(String path)
+//Set up the the actual Trees of the StoryTree
 //ARGUMENTS:
 //	path(String) - the file path to the local folder that holds all of the characters' Trees, these files have to be the same as the name of the character
 //RETURN void
-SpeakTree.prototype.setTrees = function(path){
+StoryTree.prototype.setTrees = function(path){
 
 	var that = this;
 
@@ -131,7 +131,7 @@ SpeakTree.prototype.setTrees = function(path){
 	//Loop through each character, adding their corresponding speak tree to the path name
 	for(var b = 0; b < characters.length; b++){
 		var char = characters[b];
-		var newPath = path + "/" + char.name + ".json";
+		var newPath = path + char.name + ".json";
 
 		var request = new XMLHttpRequest();
 		request.open('GET', newPath, true);
@@ -145,7 +145,7 @@ SpeakTree.prototype.setTrees = function(path){
 
 		    //Create Speak tree and set it to the character
 		    var sTree = new STree();
-		    char.setSpeakTree(sTree);
+		    char.setStoryTree(sTree);
 
 		    //Loop through each action
 		    for(var c = 0; c < data.length; c++){
@@ -203,13 +203,13 @@ SpeakTree.prototype.setTrees = function(path){
 	}
 };
 
-//SpeakTree.getOptions(int numOfOptions)
-//Return a number of options in a specific characters SpeakTree
+//StoryTree.getOptions(int numOfOptions)
+//Return a number of options in a specific characters StoryTree
 //ARGUMENTS:
 //	character(String) - character name
 //	numOfOptions(int) - number of options for that character
 //RETURN [int] uids - an array of the action uids available to execute
-SpeakTree.prototype.getOptions = function(character, numOfOptions){
+StoryTree.prototype.getOptions = function(character, numOfOptions){
 
 	var that = this;
 
@@ -284,7 +284,7 @@ SpeakTree.prototype.getOptions = function(character, numOfOptions){
 		return returnVal;
 	}
 
-	//Private function that traverses the non-binary speakTree
+	//Private function that traverses the non-binary StoryTree
 	//Recursively goes through the tree and finds each available action
 	//ARGUMENTS:
 	//	uid(int) - the uid of the action to be traversed
@@ -374,13 +374,13 @@ SpeakTree.prototype.getOptions = function(character, numOfOptions){
 
 }
 
-//SpeakTree.getActionName(String character, int uid)
+//StoryTree.getActionName(String character, int uid)
 //Given a character and a uid for an action, return the name of that action
 //ARGUMENTS:
 //	character(String) - the name of the character with the action you want
 //	uid(int) - the action's uid
 //return String -the name of the corresponding action
-SpeakTree.prototype.getActionName = function(character, uid){
+StoryTree.prototype.getActionName = function(character, uid){
 
 	var that = this;
 
@@ -418,20 +418,20 @@ SpeakTree.prototype.getActionName = function(character, uid){
 	return actionName;
 }
 
-//SpeakTree.isLoaded()
+//StoryTree.isLoaded()
 //Just a simple function to tell if it's been loaded
 //RETURN bool - have the JSONs been loaded
-SpeakTree.prototype.isLoaded = function(){
+StoryTree.prototype.isLoaded = function(){
 	return !(this.loadingSDB || this.loadingTree || this.loadingCharacters);
 }
 
-//SpeakTree.executeAction()
+//StoryTree.executeAction()
 //Executes a given action for a given character
 //ARGUMENTS:
 //	character(String) - Name of the character
 //	uid(int) - uid of the action to be executed
 //RETURN void
-SpeakTree.prototype.executeAction = function(character, uid){
+StoryTree.prototype.executeAction = function(character, uid){
 	var that = this;
 
 	//check to see if we're still loading JSON
@@ -514,10 +514,10 @@ SpeakTree.prototype.executeAction = function(character, uid){
 	execute(uid);
 }
 
-//SpeakTree.getCharacters()
+//StoryTree.getCharacters()
 //Get the names of all available characters
-//	return([string]) - list of all characters that are available in the speaktree
-SpeakTree.prototype.getCharacters = function(){
+//	return([string]) - list of all characters that are available in the StoryTree
+StoryTree.prototype.getCharacters = function(){
 	var charList = [];
 	for(var i = 0; i < this.characters.length; i++){
 		charList.push(this.characters[i].name);
@@ -525,7 +525,7 @@ SpeakTree.prototype.getCharacters = function(){
 	return charList;
 }
 
-SpeakTree.prototype.getCharacteristics = function(character){
+StoryTree.prototype.getCharacteristics = function(character){
 	for(var i = 0; i < this.characters.length; i++){
 		if(this.characters[i].name === character) return character.characteristics;
 	}
