@@ -2,21 +2,21 @@ StoryTree is an advanced game AI engine library inspired by UCSC's CiF.
 
 Features:
 =========  
-  *As a game creator, you can use StoryTree to set up a flexible story space.  
-  *StoryTree can set and track characteristics of characters, the game world, and the player.  
-  *StoryTree uses a non-binary, layered tree structure to dynamically choose which actions can be performed.  
-  *StoryTree can load and run multiple StoryTree instances for organizational purposes  
-  *Content in StoryTree is authored by simple JSON files  
+  -As a game creator, you can use StoryTree to set up a flexible story space.  
+  -StoryTree can set and track characteristics of characters, the game world, and the player.  
+  -StoryTree uses a non-binary, layered tree structure to dynamically choose which actions can be performed.  
+  -StoryTree can load and run multiple StoryTree instances for organizational purposes  
+  -Content in StoryTree is authored by simple JSON files  
 
 StoryTree is written in Javascript, with a C++ version on the way
 
 Overview
 ========
 
-StoryTree is not a trivial AI engine. There are 3 moving parts.
-  *SDB (Story DataBase)
-  *Characters
-  *Story Trees
+StoryTree is not a trivial AI engine. There are 3 moving parts.  
+  -SDB (Story DataBase)  
+  -Characters  
+  -Story Trees  
 
 SDB
 ---
@@ -122,7 +122,7 @@ The Action Tree brings StoryTree together, and it is absolutely the most complex
 
 ![alt tag](https://github.com/grnnn/StoryTree/blob/master/Examples/ActionTreeExample.png)
 
-An Action is given a name (which doesn't have to be unique), a uid (unique ID, has to be a unique int), a identifier puts it at the top of the tree, a parent uid (0 if at top of tree), a set of children uids, a class,
+An Action is given a name (which doesn't have to be unique), a uid (unique ID, has to be a unique int), an identifier that puts it at the top of the tree, a parent uid (0 if at top of tree), a set of children uids, a class,
 a set of Preconditions, and a set of Expressions.
 
 Preconditions are expressed by an SDB Value (class, type, value), a character, and an operator. The operation on the precondition describes how it is compared to a precondition (ex. ">", "<", "=="). All preconditions on an action have to be true for it to be traversed to. All Actions have to have at least 1 Precondition.
@@ -130,8 +130,8 @@ Preconditions are expressed by an SDB Value (class, type, value), a character, a
 Expressions change chracteristics of the StoryTree system. They are also represented as SDB values (class, type, value), a character, and an operator. The operation on the Expression describes how it changes a Characteristic (ex. "+", "-", "="). The character specifies which character's characteristic to change. Actions don't have to have an Expression.
 
 There are two main ways that the Action Tree is interacted with:  
-  *Story Tree can retrieve a number of specified leaf (no children) actions from the Action class with the getActions() function. The Action Tree will only return leaf actions that have satisfied all of the preconditions of all preceding parents. (*Note*: If an Action is given a class, all child actions will inherit that class. No more than 1 action from the same class can be returned by the getOptions() function. This is a useful way to break your actions up into categories.)  
-  *Story Tree can execute a leaf Action that is accesible by way of getOptions(). You do this with the executeAction() function. This will resolve all expressions of the Action, and then also resolve all of the expressions of all of the parent Actions.
+  -Story Tree can retrieve a number of specified leaf (no children) actions from the Action class with the getActions() function. The Action Tree will only return leaf actions that have satisfied all of the preconditions of all preceding parents. (*Note*: If an Action is given a class, all child actions will inherit that class. No more than 1 action from the same class can be returned by the getOptions() function. This is a useful way to break your actions up into categories.)  
+  -Story Tree can execute a leaf Action that is accesible by way of getOptions(). You do this with the executeAction() function. This will resolve all expressions of the Action, and then also resolve all of the expressions of all of the parent Actions.
 
 Example JSON to populate Action Tree:
 ```json
@@ -271,7 +271,7 @@ Example JSON to populate Action Tree:
 ]
 ```
 
-*Note:* StoryTree reads in a path to a folder for Action Tree population. Each character has a json file that has the exact name of that character (for example, the above json is called Trish.json), and then that folder is moved to the folder. StoryTree looks for all characters registered by characters.json when evaluating (Except for "World" and "Player").
+*Note:* StoryTree reads in a path to a folder for Action Tree population. Each character has a json file that has the exact name of that character (for example, the above json is called Trish.json), and then that JSON file is moved to the folder. StoryTree looks for all characters registered by characters.json when evaluating (Except for "World" and "Player").
 
 Public Functions:
 =================
@@ -322,7 +322,7 @@ var options = myStoryTree.getOptions("Trish", 3);
 ```
 
 
-**getActionName** - Given a character and a uid for an action, return the name  
+**getActionName** - Given a character and a uid for an action, return the name of the action
 Arguments: String characterName, int uid
 
 js:
