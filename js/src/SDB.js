@@ -1,7 +1,7 @@
 /*
 * SDBClass, represents a category of social space that can be used 
 *	name(String): the name of the category Class
-*	types({String}): Hash Table of the subcategory names
+*	types({String}): Lookup Table of the subcategory names
 *	isBoolean(bool): is the category expressed as a boolean or a number
 *	min(int): minimum number the value can go to (only if not boolean)
 *	max(int): minimum number the value can go to (only if not boolean)
@@ -27,7 +27,7 @@ var SDBClass = function(name, types, isBoolean, min, max, defaultVal){
 * SDB stands for "Story Database", contains a set of SDBClasses
 * Can be expressed as Predicates or Characteristics
 *
-*	SDBClasses(hash table): used to contain a set of SDBClasses, made a hash table for easy lookup
+*	SDBClasses(Lookup table): used to contain a set of SDBClasses, made a Lookup table for easy lookup
 */
 var SDB = function(){
 	this.SDBClasses = {};
@@ -39,7 +39,7 @@ var SDB = function(){
 //		cls(SDBCLass) - the class being added to SDB 
 //	RETURN: void
 SDB.prototype.addClass = function(cls){
-	//SDBClass is added in a hash table for easy type lookup
+	//SDBClass is added in a Lookup table for easy type lookup
 	this.SDBClasses[cls.name] = cls;
 }
 

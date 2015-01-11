@@ -76,7 +76,7 @@ Characteristic.prototype.setVal = function(val){
 /*Character class, a character is an enitity that can have characteristics and a Speak Tree
 *
 *	name(String) - Unique name of the character
-*	characteristics([Characteristics]) - Double Hash table containing the set of proper characteristics, hashing class and type
+*	characteristics([Characteristics]) - Double Lookup table containing the set of proper characteristics, Lookuping class and type
 *	tree(STree) - Actual STree for that character
 *	
 */  
@@ -88,7 +88,7 @@ var Character = function(name){
 }
 
 //Character.addCharacteristic(String cls, String type, int min, int max, bool isBoolean, int or bool defaultVal)
-//Sets up the double hash of the characteristic, and also creates a new corresponding Chracteristic
+//Sets up the double Lookup of the characteristic, and also creates a new corresponding Chracteristic
 //ARGUMENTS:
 //	cls(String) - SDBClass
 //	type(String) - Type of that class
@@ -98,8 +98,13 @@ var Character = function(name){
 //	defaultVal(bool or int) - is the starting value of the characteristic
 //RETURN void
 Character.prototype.addCharacteristic = function(cls, type, min, max, isBoolean, defaultVal){
-	this.characteristics[cls] = {};
+	if(this.characteristics[cls] == undefined) this.characteristics[cls] = {};
 	this.characteristics[cls][type] = new Characteristic(cls, type, min, max, isBoolean, defaultVal);
+}
+
+Character.prototype.setCharacteristic = function(characteristic){
+	if(this.characteristics[characteristic.className] == undefined) this.characteristics[characteristic.className] = {};
+	this.characteristics[characteristic.className][characteristic.type] = characteristic;
 }
 
 //Character.parseExpression(cls, type, operation, value)

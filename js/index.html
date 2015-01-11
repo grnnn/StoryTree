@@ -11,6 +11,7 @@
 
 		<script src="src/SDB.js"></script>
 		<script src="src/Character.js"></script>
+		<script src="src/STree.js"></script>
 		<script src="src/SpeakTree.js"></script>
 
 		<script>
@@ -18,6 +19,21 @@
 		speakTree.setSDB("res/SDB.json");
 		speakTree.setCharacters("res/characters.json");
 		speakTree.setTrees("res/SpeakTrees");
+
+		var update = function(){
+			if(speakTree.isLoaded()){
+				var options = speakTree.getOptions("Trish", 3);
+				console.log(time2-time1);
+				console.log("Your options are: ");
+				for(var i = 0; i < options.length; i++){
+					console.log(speakTree.getActionName("Trish", options[i]));
+				}
+			} else {
+				window.setTimeout(update, 1000);
+			}
+		};
+
+		update();
 		</script>
 
 	</body>

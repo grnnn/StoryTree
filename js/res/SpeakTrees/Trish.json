@@ -1,8 +1,25 @@
 [
 {
+	"name" : "Are you sad Trish?",
+	"uid" : 15495,
+	"first" : true,
+	"parent" : 0,
+	"preconditions" : 
+	[
+		{
+			"character" : "Trish",
+			"class" : "feeling",
+			"type" : "sad",
+			"operation" : "==",
+			"value" : 2
+		}
+	]
+},
+{
 	"name" : "Give Trish a Cookie",
 	"uid" : 15496,
 	"first" : true,
+	"parent" : 0,
 	"preconditions" : 
 	[
 		{
@@ -39,6 +56,7 @@
 	"name" : "Trish is Happy",
 	"uid" : 15497,
 	"first" : false,
+	"parent" : 15496,
 	"preconditions" :
 	[
 		{
@@ -55,9 +73,10 @@
 	]
 },
 {
-	"name" : "Trish is Unhappy",
+	"name" : "Trish is Unhappy. You probably shouldn't give her a cookie...",
 	"uid" : 15498,
 	"first" : false,
+	"parent" : 15496,
 	"preconditions" :
 	[
 		{
@@ -83,6 +102,7 @@
 	"name" : "Trish likes cookies",
 	"uid" : 15499,
 	"first" : false,
+	"parent" : 15497,
 	"preconditions" :
 	[
 		{
@@ -98,6 +118,7 @@
 	"name" : "Trish doesn't like cookies",
 	"uid" : 15499,
 	"first" : false,
+	"parent" : 15497,
 	"preconditions" :
 	[
 		{

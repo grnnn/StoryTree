@@ -38,6 +38,7 @@ var Expression = function(character, cls, type, operation, value){
 *	preconditions([Precondition]) - array of preconditions to access action
 *	expressions([Expression]) - array of Expressions to evaluate when the action is completed
 *	children([int]) - child Action ids
+*	parent(int) - uid of the parent action
 */
 var Action = function(name, uid){
 	this.name = name;
@@ -47,6 +48,7 @@ var Action = function(name, uid){
 	this.expressions = [];
 
 	this.children = [];
+	this.parent = 0;
 }
 
 //Adds a precondtion to the action
@@ -64,10 +66,20 @@ Action.prototype.addChild = function(uid){
 	this.children.push(uid);
 }
 
+//Sets the pointer to the parent uid
+Action.prototype.setParent = function(uid){
+	this.parent = uid;
+}
+
+//Test to see if the Action is a leaf
+Action.prototype.isLeaf = function(){
+	return (this.children.length === 0);
+}
+
 /* STree class
 *
 *	firsts([int]) - array of action uids that are at the top of the tree 
-*	actions([int]) - hash table of uids mapped to actions
+*	actions([int]) - Lookup table of uids mapped to actions
 *
 */
 var STree = function(){
@@ -82,5 +94,5 @@ STree.prototype.addFirst = function(uid){
 
 //map an action to a uid
 STree.prototype.mapAction = function(name, uid){
-	STree.actions[uid] = new Action(name, uid);
+	this.actions[uid] = new Action(name, uid);
 }
