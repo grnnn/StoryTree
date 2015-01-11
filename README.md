@@ -23,7 +23,7 @@ SDB
 
 The Story DataBase represents the Story Space that can be traversed in StoryTree. The Objects in the SDB follow a specific format, but the SDB is general enough to allow a lot of flexibility.
 
-![alt tag](https://raw.github.com/grnnn/StoryTree/Examples/SDBExample.png)
+![alt tag](https://github.com/grnnn/StoryTree/blob/master/Examples/SDBExample.png)
 
 The SDB's basic building blocks are Classes (Not to be confused with Computer Science classes). Classes are categories that can be given a set of more specific types.
 
