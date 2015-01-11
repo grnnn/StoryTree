@@ -21,8 +21,8 @@ var myStoryTree = new StoryTree();
 ```
 
 
-**setSDB** - Populates a StoryTree with a new SDB (Story DataBase) from a JSON file
-\n Arguments: String JSONPath
+**setSDB** - Populates a StoryTree with a new SDB (Story DataBase) from a JSON file  
+Arguments: String JSONPath
 
 js:
 ```javascript
@@ -30,8 +30,8 @@ myStoryTree.setSDB('res/SDB.json');
 ```
 
 
-**setCharacters** - Populates a StoryTree with a set of characters, can only be ran after SDB has been populated
-\n Arguments: String JSONPath
+**setCharacters** - Populates a StoryTree with a set of characters, can only be ran after SDB has been populated  
+Arguments: String JSONPath
 
 js:
 ```javascript
@@ -40,8 +40,8 @@ myStoryTree.setCharacters('res/character.json');
 
 
 **setTrees** - Populates a StoryTree with a set of trees, with one tree for each character.
-		   There's 1 StoryTree JSON file for each character. Can only be run after setSDB and setCharacters.
-\n Arguments: String FolderPath
+		   There's 1 StoryTree JSON file for each character. Can only be run after setSDB and setCharacters.  
+Arguments: String FolderPath
 
 js:
 ```javascript
@@ -50,8 +50,8 @@ myStoryTree.setTrees('res/StoryTrees/');
 
 
 **getOptions** - Given a character and a maximum number of options, 
-		     getOptions will return a set of uids for available actions (leafs on the tree)
-\n Arguments: String characterName, int uid
+		     getOptions will return a set of uids for available actions (leafs on the tree)  
+Arguments: String characterName, int uid
 
 js:
 ```javascript
@@ -59,8 +59,8 @@ var options = myStoryTree.getOptions("Trish", 3);
 ```
 
 
-**getActionName** - Given a character and a uid for an action, return the name
-\n Arguments: String characterName, int uid
+**getActionName** - Given a character and a uid for an action, return the name  
+Arguments: String characterName, int uid
 
 js:
 ```javascript
@@ -78,8 +78,8 @@ if(myStoryTree.isLoaded()){
 ```
 
 
-**executeAction** - Given a character and a uid, execute an action in StoryTree
-\n Arguments: String characterName, int uid
+**executeAction** - Given a character and a uid, execute an action in StoryTree  
+Arguments: String characterName, int uid
 
 js:
 ```javascript
@@ -95,8 +95,8 @@ var characters = myStoryTree.getCharacters();
 ```
 
 
-**getCharacteristics** - Given a character, return the characteristics of that character
-\n Arguments: String characterName
+**getCharacteristics** - Given a character, return the characteristics of that character  
+Arguments: String characterName
 
 js:
 ```javascript
