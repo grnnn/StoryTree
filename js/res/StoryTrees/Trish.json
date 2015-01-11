@@ -20,6 +20,7 @@
 	"uid" : 15496,
 	"first" : true,
 	"parent" : 0,
+	"class" : "Give Cookie",
 	"preconditions" : 
 	[
 		{

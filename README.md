@@ -30,7 +30,7 @@ The SDB's basic building blocks are Classes (Not to be confused with Computer Sc
 SDB Classes can either have values of booleans or ints. If Classes have int values, then they have to be given a minimum and a maximum value. SDB Classes are also given default values.
 
 Example JSON to populate an SDB:
-```
+```json
 [
 {
 	"class" : "feeling",
@@ -60,6 +60,218 @@ Example JSON to populate an SDB:
 }
 ]
 ``` 
+
+Characters
+----------
+
+The Characters are entities within StoryTree that can be given characteristics and be interacted with. There are 2 default characters called "World" and "Player", which can also be given characteristics.
+
+![alt tag](https://github.com/grnnn/StoryTree/blob/master/Examples/CharacterExample.png)
+
+Characteristics are expressed by SDB values. You can give a character a characteristic by specifying what the class, type, and value is for that characteristic.
+
+Example JSON to populate characters:
+```json
+{
+	"characters" : ["Becky", "Trish"],
+	"characteristics" : 
+	[
+		{
+			"name" : "Becky", 
+			"class" : "feeling",
+			"type" : "happy",
+			"value" : 4
+		},
+		{
+			"name" : "Becky",
+			"class" : "likes eating",
+			"type" : "cookie",
+			"value" : true
+		},
+		{
+			"name" : "Trish", 
+			"class" : "feeling",
+			"type" : "sad",
+			"value" : 2
+		},
+		{
+			"name" : "Trish",
+			"class" : "likes eating",
+			"type" : "cookies",
+			"value" : false
+		},
+		{
+			"name" : "World", 
+			"class" : "location",
+			"type" : "underwater"
+		},
+		{
+			"name" : "Player",
+			"class" : "owns",
+			"type" : "cookie",
+			"value" : true
+		}
+	]
+}
+```
+
+Action Tree
+-----------
+
+The Action Tree brings StoryTree together, and it is absolutely the most complex part. Every character can be assigned an Action Tree, and Actions make up every node on the tree.
+
+![alt tag](https://github.com/grnnn/StoryTree/blob/master/Examples/ActionTreeExample.png)
+
+An Action is given a name (which doesn't have to be unique), a uid (unique ID, has to be a unique int), a identifier puts it at the top of the tree, a parent uid (0 if at top of tree), a set of children uids, a class,
+a set of Preconditions, and a set of Expressions.
+
+Preconditions are expressed by an SDB Value (class, type, value), a character, and an operator. The operation on the precondition describes how it is compared to a precondition (ex. ">", "<", "=="). All preconditions on an action have to be true for it to be traversed to. All Actions have to have at least 1 Precondition.
+
+Expressions change chracteristics of the StoryTree system. They are also represented as SDB values (class, type, value), a character, and an operator. The operation on the Expression describes how it changes a Characteristic (ex. "+", "-", "="). The character specifies which character's characteristic to change. Actions don't have to have an Expression.
+
+There are two main ways that the Action Tree is interacted with:
+  *Story Tree can retrieve a number of specified leaf (no children) actions from the Action class with the getActions() function. The Action Tree will only return leaf actions that have satisfied all of the preconditions of all preceding parents. (*Note*: If an Action is given a class, all child actions will inherit that class. No more than 1 action from the same class can be returned by the getOptions() function. This is a useful way to break your actions up into categories.)
+  *Story Tree can execute a leaf Action that is accesible by way of getOptions(). You do this with the executeAction() function. This will resolve all expressions of the Action, and then also resolve all of the expressions of all of the parent Actions.
+
+Example JSON to populate Action Tree:
+```json
+[
+{
+	"name" : "Trish Looks sad. Ask her if she's okay.",
+	"uid" : 15495,
+	"first" : true,
+	"parent" : 0,
+	"preconditions" : 
+	[
+		{
+			"character" : "Trish",
+			"class" : "feeling",
+			"type" : "sad",
+			"operation" : "==",
+			"value" : 2
+		}
+	]
+},
+{
+	"name" : "Give Trish a Cookie",
+	"uid" : 15496,
+	"first" : true,
+	"parent" : 0,
+	"class" : "Give Cookie",
+	"preconditions" : 
+	[
+		{
+			"character" : "Player",
+			"class" : "owns",
+			"type" : "cookie",
+			"operation" : "==",
+			"value" : true
+		}
+	],
+	"expressions" :
+	[
+		{
+			"character" : "Trish",
+			"class" : "owns",
+			"type" : "cookie",
+			"operation" : "=",
+			"value" : true
+		},
+		{
+			"character" : "Player",
+			"class" : "owns",
+			"type" : "cookie",
+			"operation" : "=",
+			"value" : false
+		}
+	],
+	"leadsTo": 
+	[
+		15497, 15498
+	]
+},
+{
+	"name" : "Give Trish a cookie, and Trish is Happy",
+	"uid" : 15497,
+	"first" : false,
+	"parent" : 15496,
+	"preconditions" :
+	[
+		{
+			"character" : "Trish",
+			"class" : "feeling",
+			"type" : "happy",
+			"operation" : ">",
+			"value" : 5
+		}
+	],
+	"leadsTo": 
+	[
+		15499, 15500
+	]
+},
+{
+	"name" : "Give Trish a cookie, and Trish is Unhappy",
+	"uid" : 15498,
+	"first" : false,
+	"parent" : 15496,
+	"preconditions" :
+	[
+		{
+			"character" : "Trish",
+			"class" : "feeling",
+			"type" : "happy",
+			"operation" : "<",
+			"value" : 6
+		}
+	], 
+	"expressions" :
+	[
+		{
+			"character" : "Trish",
+			"class" : "feeling",
+			"type" : "angry",
+			"operation" : "+",
+			"value" : 2
+		}
+	]
+},
+{
+	"name" : "Give Trish a cookie, Trish is happy, and Trish likes cookies",
+	"uid" : 15499,
+	"first" : false,
+	"parent" : 15497,
+	"preconditions" :
+	[
+		{
+			"character" : "Trish",
+			"class" : "likes eating",
+			"type" : "cookie",
+			"operation" : "==",
+			"value" : true
+		}
+	]
+},
+{
+	"name" : "Give Trish a cookie, Trish is happy, and Trish doesn't like cookies",
+	"uid" : 15499,
+	"first" : false,
+	"parent" : 15497,
+	"preconditions" :
+	[
+		{
+			"character" : "Trish",
+			"class" : "likes eating",
+			"type" : "cookie",
+			"operation" : "==",
+			"value" : false
+		}
+	]
+}
+]
+```
+
+*Note:* StoryTree reads in a path to a folder for Action Tree population. Each character has a json file that has the exact name of that character (for example, the above json is called Trish.json), and then that folder is moved to the folder. StoryTree looks for all characters registered by characters.json when evaluating (Except for "World" and "Player").
 
 Public Functions:
 =================
