@@ -10,7 +10,58 @@ Features:
 
 StoryTree is written in Javascript, with a C++ version on the way
 
-public functions:
+Overview
+========
+
+StoryTree is not a trivial AI engine. There are 3 moving parts.
+  *SDB (Story DataBase)
+  *Characters
+  *Story Trees
+
+SDB
+---
+
+The Story DataBase represents the Story Space that can be traversed in StoryTree. The Objects in the SDB follow a specific format, but the SDB is general enough to allow a lot of flexibility.
+
+![alt tag](https://raw.github.com/grnnn/StoryTree/Examples/SDBExample.png)
+
+The SDB's basic building blocks are Classes (Not to be confused with Computer Science classes). Classes are categories that can be given a set of more specific types.
+
+SDB Classes can either have values of booleans or ints. If Classes have int values, then they have to be given a minimum and a maximum value. SDB Classes are also given default values.
+
+Example JSON to populate an SDB:
+```
+[
+{
+	"class" : "feeling",
+	"types" : ["happy", "sad", "angry"],
+	"isBoolean" : false,
+	"min" : 0,
+	"max" : 10,
+	"defaultVal" : 5
+},
+{
+	"class" : "likes eating",
+	"types" : ["cookie", "pasta", "pizza"],
+	"isBoolean" : true,
+	"defaultVal" : true
+},
+{
+	"class" : "owns",
+	"types" : ["cookie", "computer", "house"],
+	"isBoolean" : true,
+	"defaultVal" : true
+},
+{
+	"class" : "location",
+	"types" : ["underwater", "volcano"],
+	"isBoolean" : true,
+	"defaultVal" : true
+}
+]
+``` 
+
+Public Functions:
 =================
 
 **Constructor** - creates a new StoryTree instance
