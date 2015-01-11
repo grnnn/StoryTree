@@ -198,7 +198,7 @@ StoryTree.prototype.setTrees = function(path){
 
 		    	//Set the action's class if it exists
 		    	if(action.class !== undefined){
-		    		actionObj.setParent(action.class);
+		    		sTree.setClass(action.uid, action.class);
 		    	}
 
 		    }
