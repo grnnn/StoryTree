@@ -14,27 +14,27 @@ public functions:
 Constructor - creates a new StoryTree instance
 
 js:
-...javascript
+'''javascript
 var myStoryTree = new StoryTree();
-...
+'''
 
 
 setSDB - Populates a StoryTree with a new SDB (Story DataBase) from a JSON file
 Arguments: String JSONPath
 
 js:
-...javascript
+'''javascript
 myStoryTree.setSDB('res/SDB.json');
-...
+'''
 
 
 setCharacters - Populates a StoryTree with a set of characters, can only be ran after SDB has been populated
 Arguments: String JSONPath
 
 js:
-...javascript
+'''javascript
 myStoryTree.setCharacters('res/character.json');
-...
+'''
 
 
 setTrees - Populates a StoryTree with a set of trees, with one tree for each character.
@@ -42,9 +42,9 @@ setTrees - Populates a StoryTree with a set of trees, with one tree for each cha
 Arguments: String FolderPath
 
 js:
-...javascript
+'''javascript
 myStoryTree.setTrees('res/StoryTrees/');
-...
+'''
 
 
 getOptions - Given a character and a maximum number of options, 
@@ -52,51 +52,51 @@ getOptions - Given a character and a maximum number of options,
 Arguments: String characterName, int uid
 
 js:
-...javascript
+'''javascript
 var options = myStoryTree.getOptions("Trish", 3);
-...
+'''
 
 
 getActionName - Given a character and a uid for an action, return the name
 Arguments: String characterName, int uid
 
 js:
-...javascript
+'''javascript
 var name = myStoryTree.getActionName("Trish", options[0]);
-...
+'''
 
 
 isLoaded - Can tell if any JSON libraries are still loading, StoryTree shouldn't be used if anything is loading
 
 js:
-...javascript
+'''javascript
 if(myStoryTree.isLoaded()){
 	console.log("It's okay to use StoryTree");
 }
-...
+'''
 
 
 executeAction - Given a character and a uid, execute an action in StoryTree
 Arguments: String characterName, int uid
 
 js:
-...javascript
+'''javascript
 myStoryTree.executeAction("Trish", options[0]);
-...
+'''
 
 
 getCharacters - Returns a set of characters available in the Story Tree
 
 js:
-...javascript
+'''javascript
 var characters = myStoryTree.getCharacters();
-...
+'''
 
 
 getCharacteristics - Given a character, return the characteristics of that character
 Arguments: String characterName
 
 js:
-...javascript
+'''javascript
 var TrishCharacterisitics = myStoryTree.getCharacteristics("Trish");
-...
+'''
