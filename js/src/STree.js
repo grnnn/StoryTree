@@ -76,6 +76,11 @@ Action.prototype.isLeaf = function(){
 	return (this.children.length === 0);
 }
 
+//Test to see if the Action is a first
+Action.prototype.isFirst = function(){
+	return (this.parent === 0);
+}
+
 /* STree class
 *
 *	firsts([int]) - array of action uids that are at the top of the tree 

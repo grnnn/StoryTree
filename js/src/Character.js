@@ -115,7 +115,9 @@ Character.prototype.setCharacteristic = function(characteristic){
 //	operation(String) - The way the expression is set
 //	value(int or bool) - What value is parsed
 Character.prototype.parseExpression = function(cls, type, operation, value){
-	if(value !== undefined) this.characteristics[cls][type].parseExpression(operation, value);
+	if(this.characteristics[cls][type] !== undefined) {
+		this.characteristics[cls][type].parseExpression(operation, value);
+	}
 }
 
 Character.prototype.setSpeakTree = function(tree){

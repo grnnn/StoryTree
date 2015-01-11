@@ -1,3 +1,278 @@
+/*
+* SDBClass, represents a category of social space that can be used 
+*	name(String): the name of the category Class
+*	types({String}): Lookup Table of the subcategory names
+*	isBoolean(bool): is the category expressed as a boolean or a number
+*	min(int): minimum number the value can go to (only if not boolean)
+*	max(int): minimum number the value can go to (only if not boolean)
+*	defaultVal(int or bool): default value
+*
+*/
+var SDBClass = function(name, types, isBoolean, min, max, defaultVal){
+	this.name = name;
+	this.types = {};
+	//Store each type as a key, making lookup effiecient
+	for(var i = 0; i < types.length; i++){
+		this.types[types[i]] = true;
+	}
+	this.isBoolean = isBoolean;
+	if(!isBoolean) {
+		this.min = min;
+		this.max = max;
+	}
+	this.defaultVal = defaultVal; 
+};
+
+/*
+* SDB stands for "Story Database", contains a set of SDBClasses
+* Can be expressed as Predicates or Characteristics
+*
+*	SDBClasses(Lookup table): used to contain a set of SDBClasses, made a Lookup table for easy lookup
+*/
+var SDB = function(){
+	this.SDBClasses = {};
+}
+
+//SDB.addClass(SDBClass cls)
+//Adds the SDBClass into the SDB
+//	ARGUMENTS:
+//		cls(SDBCLass) - the class being added to SDB 
+//	RETURN: void
+SDB.prototype.addClass = function(cls){
+	//SDBClass is added in a Lookup table for easy type lookup
+	this.SDBClasses[cls.name] = cls;
+}
+
+/*
+* Characteristic class, a Characteristic can be attached to either the world or a character
+*
+*	className(string): Name of the class
+*	type(string): Name of the type
+*	value(int or bool): value of the characteristic, defaults to defaultVal
+*	min(int): min value
+*	max(int): max value
+*/
+var Characteristic = function(cls, type, min, max, isBoolean, defaultVal){
+	this.className = cls;
+	this.type = type;
+	this.value = defaultVal;
+	this.isBoolean = isBoolean;
+
+	if(!isBoolean){
+		this.min = min;
+		this.max = max;
+	} 
+}
+
+//Characteristic.parseExpression(String operation, int(or bool) value)
+//Parses an Expression to change a characteristic
+//ARGUMENTS:
+//	operation(String) - specifies how the characteristic changes
+//	value(int or bool) - Amount of change made
+//RETURN void
+Characteristic.prototype.parseExpression = function(operation, value){
+	switch(operation){
+		case "=" : this.setVal(value);
+				   break;
+		case "+" : this.addVal(value);
+				   break;
+		case "-" : this.subVal(value);
+				   break;
+	}
+}
+
+//Characteristic.addVal(int delta)
+//Subtracts value to an int characteristic
+//ARGUMENTS:
+//  delta(int) - amount added to value
+//RETURN void
+Characteristic.prototype.addVal = function(delta){
+	if(this.value + delta > this.max) {
+		this.value = this.max;
+	} else {
+		this.value += delta;
+	}
+}
+
+//Characteristic.subVal(int delta)
+//Subtracts value to an int characteristic
+//ARGUMENTS:
+//  delta(int) - amount subtracted from value
+//RETURN void
+Characteristic.prototype.subVal = function(delta){
+	if(this.value - delta < this.min) {
+		this.value = this.min;
+	} else {
+		this.value -= delta;
+	}
+}
+
+//Characteristic.setVal(int(or bool) delta)
+//Manually sets a characteristic
+//ARGUMENTS:
+//  val(int or bool) - value to set
+//RETURN void
+Characteristic.prototype.setVal = function(val){
+	this.value = val;
+}
+
+
+
+/*Character class, a character is an enitity that can have characteristics and a Speak Tree
+*
+*	name(String) - Unique name of the character
+*	characteristics([Characteristics]) - Double Lookup table containing the set of proper characteristics, Lookuping class and type
+*	tree(STree) - Actual STree for that character
+*	
+*/  
+var Character = function(name){
+	this.name = name;
+
+	this.characteristics = {};
+	this.tree = {};
+}
+
+//Character.addCharacteristic(String cls, String type, int min, int max, bool isBoolean, int or bool defaultVal)
+//Sets up the double Lookup of the characteristic, and also creates a new corresponding Chracteristic
+//ARGUMENTS:
+//	cls(String) - SDBClass
+//	type(String) - Type of that class
+//	min(int) - minimum limit on value
+//	max(int) - maximum limit on value
+//	isBoolean(bool) - is the characteristic a boolean
+//	defaultVal(bool or int) - is the starting value of the characteristic
+//RETURN void
+Character.prototype.addCharacteristic = function(cls, type, min, max, isBoolean, defaultVal){
+	if(this.characteristics[cls] == undefined) this.characteristics[cls] = {};
+	this.characteristics[cls][type] = new Characteristic(cls, type, min, max, isBoolean, defaultVal);
+}
+
+Character.prototype.setCharacteristic = function(characteristic){
+	if(this.characteristics[characteristic.className] == undefined) this.characteristics[characteristic.className] = {};
+	this.characteristics[characteristic.className][characteristic.type] = characteristic;
+}
+
+//Character.parseExpression(cls, type, operation, value)
+//Parses an expression on a characteristic, passed on to member
+//ARGUMENTS:
+//	cls(String) - SDBClass
+//	type(String) - Type of that class
+//	operation(String) - The way the expression is set
+//	value(int or bool) - What value is parsed
+Character.prototype.parseExpression = function(cls, type, operation, value){
+	if(this.characteristics[cls][type] !== undefined) {
+		this.characteristics[cls][type].parseExpression(operation, value);
+	}
+}
+
+Character.prototype.setSpeakTree = function(tree){
+	this.tree = tree;
+}
+
+/* Precondition class, used to decide if an action can be performed
+*	
+*	character(string) - name of the character to evaluate
+*	cls(string) - the SDBClass to evaluate
+*	type(string) - the type to evaluate
+*	operation(string) - the comperator to evaluate with
+*	value(int or bool) - the the value to compare
+*/
+var Precondition = function(character, cls, type, operation, value){
+	this.characterName = character;
+	this.cls = cls;
+	this.type = type;
+	this.operation = operation;
+	this.value = value;
+}
+
+/* Expression class, used to change characteristics
+*	
+*	character(string) - name of the character to evaluate
+*	cls(string) - the SDBClass to evaluate
+*	type(string) - the type to evaluate
+*	operation(string) - the comperator to evaluate with
+*	value(int or bool) - the the value to compare
+*/
+var Expression = function(character, cls, type, operation, value){
+	this.characterName = character;
+	this.cls = cls;
+	this.type = type;
+	this.operation = operation;
+	this.value = value;
+}
+
+/* Action class, an action that can be executed by interacting with a character
+*Can only be executed when preconditions are met, and then expressions are evaluated when action is executed 
+*	
+*	name(string) - name of the action to take, can be anything
+*	uid(int) - unique id for every action for ease of access
+*	preconditions([Precondition]) - array of preconditions to access action
+*	expressions([Expression]) - array of Expressions to evaluate when the action is completed
+*	children([int]) - child Action ids
+*	parent(int) - uid of the parent action
+*/
+var Action = function(name, uid){
+	this.name = name;
+	this.uid = uid;
+
+	this.preconditions = [];
+	this.expressions = [];
+
+	this.children = [];
+	this.parent = 0;
+}
+
+//Adds a precondtion to the action
+Action.prototype.addPrecondition = function(character, cls, type, operation, value){
+	this.preconditions.push(new Precondition(character, cls, type, operation, value));
+}
+
+//Adds an expreesion to the action
+Action.prototype.addExpression = function(character, cls, type, operation, value){
+	this.expressions.push(new Expression(character, cls, type, operation, value));
+}
+
+//Adds a pointer to another action in the form as a reference to its uid
+Action.prototype.addChild = function(uid){
+	this.children.push(uid);
+}
+
+//Sets the pointer to the parent uid
+Action.prototype.setParent = function(uid){
+	this.parent = uid;
+}
+
+//Test to see if the Action is a leaf
+Action.prototype.isLeaf = function(){
+	return (this.children.length === 0);
+}
+
+//Test to see if the Action is a first
+Action.prototype.isFirst = function(){
+	return (this.parent === 0);
+}
+
+/* STree class
+*
+*	firsts([int]) - array of action uids that are at the top of the tree 
+*	actions([int]) - Lookup table of uids mapped to actions
+*
+*/
+var STree = function(){
+	this.firsts = [];
+	this.actions = {};
+}
+
+//add an action to the top of the Speak Tree
+STree.prototype.addFirst = function(uid){
+	this.firsts.push(uid);
+}
+
+//map an action to a uid
+STree.prototype.mapAction = function(name, uid){
+	this.actions[uid] = new Action(name, uid);
+}
+
 var SpeakTree = function(){
 	this.SDB = new SDB();
 	this.characters = [];

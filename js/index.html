@@ -1,18 +1,22 @@
 <html>
 	<head>
 		<title> Speak Tree Test </title>
+		
 
-		<p>
-			Please open the console to use Speak Tree.
-		</p>
+		<button id="trishActions">Get Trish's actions</button>
+		<p id="actions"></p>
+
+		<button id="doAction" style="display: none;">Do action 15498</button>
 
 	</head>
 	<body>
 
-		<script src="src/SDB.js"></script>
+		<!--<script src="src/SDB.js"></script>
 		<script src="src/Character.js"></script>
 		<script src="src/STree.js"></script>
-		<script src="src/SpeakTree.js"></script>
+		<script src="src/SpeakTree.js"></script>-->
+
+		<script src="build/SpeakTree.js"></script>
 
 		<script>
 		var speakTree = new SpeakTree();
@@ -22,18 +26,39 @@
 
 		var update = function(){
 			if(speakTree.isLoaded()){
+
+				console.log(speakTree);
+
 				var options = speakTree.getOptions("Trish", 3);
-				console.log(time2-time1);
-				console.log("Your options are: ");
-				for(var i = 0; i < options.length; i++){
-					console.log(speakTree.getActionName("Trish", options[i]));
-				}
+				
+				speakTree.executeAction("Trish", options[1]);
+
+				console.log(speakTree);
+				
 			} else {
 				window.setTimeout(update, 1000);
 			}
 		};
 
-		update();
+		//update();
+
+		document.getElementById("trishActions").addEventListener("click", function(){
+			if(speakTree.isLoaded()){
+				var string = "Actions: \n";
+				var options = speakTree.getOptions("Trish", 3);
+				for(var i = 0; i < options.length; i++){
+					string += "<li> uid: " + options[i] + ", name: " + speakTree.getActionName("Trish", options[i]) + "</li>";
+				}
+
+				document.getElementById("actions").innerHTML = string;
+				document.getElementById("doAction").setAttribute("style", "");
+			}
+		});
+
+		document.getElementById("doAction").addEventListener("click", function(){
+			var options = speakTree.getOptions("Trish", 3);	
+			speakTree.executeAction("Trish", options[1]);			
+		});
 		</script>
 
 	</body>
