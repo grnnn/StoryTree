@@ -3,7 +3,7 @@
 	"name" : "Trish Looks sad. Ask her if she's okay.",
 	"uid" : 15495,
 	"first" : true,
-	"parent" : 0,
+	"parents" : [0],
 	"preconditions" : 
 	[
 		{
@@ -19,7 +19,7 @@
 	"name" : "Give Trish a Cookie",
 	"uid" : 15496,
 	"first" : true,
-	"parent" : 0,
+	"parents" : [0],
 	"class" : "Give Cookie",
 	"preconditions" : 
 	[
@@ -57,7 +57,7 @@
 	"name" : "Give Trish a cookie, and Trish is Happy",
 	"uid" : 15497,
 	"first" : false,
-	"parent" : 15496,
+	"parents" : [15496],
 	"preconditions" :
 	[
 		{
@@ -77,7 +77,7 @@
 	"name" : "Give Trish a cookie, and Trish is Unhappy",
 	"uid" : 15498,
 	"first" : false,
-	"parent" : 15496,
+	"parents" : [15496],
 	"preconditions" :
 	[
 		{
@@ -103,7 +103,7 @@
 	"name" : "Give Trish a cookie, Trish is happy, and Trish likes cookies",
 	"uid" : 15499,
 	"first" : false,
-	"parent" : 15497,
+	"parents" : [15497],
 	"preconditions" :
 	[
 		{
@@ -117,9 +117,9 @@
 },
 {
 	"name" : "Give Trish a cookie, Trish is happy, and Trish doesn't like cookies",
-	"uid" : 15499,
+	"uid" : 15500,
 	"first" : false,
-	"parent" : 15497,
+	"parents" : [15497],
 	"preconditions" :
 	[
 		{

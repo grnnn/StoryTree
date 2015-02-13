@@ -209,7 +209,7 @@ var Expression = function(character, cls, type, operation, value){
 *	preconditions([Precondition]) - array of preconditions to access action
 *	expressions([Expression]) - array of Expressions to evaluate when the action is completed
 *	children([int]) - child Action ids
-*	parent(int) - uid of the parent action
+*	parents([int]) - uids of the parent actions
 *	class(String) - used to group actions together
 */
 var Action = function(name, uid){
@@ -220,7 +220,7 @@ var Action = function(name, uid){
 	this.expressions = [];
 
 	this.children = [];
-	this.parent = 0;
+	this.parents = [];
 
 	this.cls = ""; 
 }
@@ -241,8 +241,8 @@ Action.prototype.addChild = function(uid){
 }
 
 //Sets the pointer to the parent uid
-Action.prototype.setParent = function(uid){
-	this.parent = uid;
+Action.prototype.addParent = function(uid){
+	this.parents.push(uid);
 }
 
 //Sets the class of the action
@@ -257,7 +257,7 @@ Action.prototype.isLeaf = function(){
 
 //Test to see if the Action is a first
 Action.prototype.isFirst = function(){
-	return (this.parent === 0);
+	return (this.parents.length === 0);
 }
 
 /* STree class
@@ -279,6 +279,33 @@ STree.prototype.addFirst = function(uid){
 //map an action to a uid
 STree.prototype.mapAction = function(name, uid){
 	this.actions[uid] = new Action(name, uid);
+}
+
+//Sets the class of an action, given a class and a uid
+STree.prototype.setClasses = function(uid, cls){
+
+	var that = this;
+
+	function setChildClass(uid){
+
+		var actionObj = that.actions[uid];
+
+		for(var i = 0; i < actionObj.children.length; i++){
+			var childUID = actionObj.children[i];
+
+			var child = that.actions[actionObj.children[i]];
+
+			child.setClass(cls);
+
+			if(child.isLeaf()){
+				continue;
+			} else {
+				setChildClass(child.uid);
+			}
+		}
+	}
+
+	setChildClass(uid);
 }
 
 /* StoryTree class, the top class with all client functions
@@ -367,6 +394,7 @@ StoryTree.prototype.setCharacters = function(path){
 
 	    			//Check if that sdbClass and type exists
 	    			var sdbClass = that.SDB.SDBClasses[characteristics[j].class];
+	    			console.log(that.SDB.SDBClasses);
 	    			if(sdbClass.types[characteristics[j].type]){
 
 	    				//Now add the characteristic to the correct character
@@ -440,6 +468,7 @@ StoryTree.prototype.setTrees = function(path){
 
 		    //Loop through each action
 		    for(var c = 0; c < data.length; c++){
+
 		    	var action = data[c];
 
 		    	//If the action is labeled as a first, set it to be a first
@@ -476,14 +505,22 @@ StoryTree.prototype.setTrees = function(path){
 			    	}
 			    }
 
-		    	//Set the action's parent
-		    	actionObj.setParent(action.parent);
+		    	//Set the action's parents
+		    	if(action.parents !== undefined){
+		    		for(var g = 0; g < action.parents.length; g++){
+		    			actionObj.addParent(action.parents[g]);
+		    		}
+		    	}
+		    }
+
+		    //Go through each action again to set the classes
+		    for(var d = 0; d < data.length; d++){
+		    	var action = data[d];
 
 		    	//Set the action's class if it exists
 		    	if(action.class !== undefined){
-		    		actionObj.setParent(action.class);
+		    		sTree.setClasses(action.uid, action.class);
 		    	}
-
 		    }
 
 		  }
@@ -504,7 +541,7 @@ StoryTree.prototype.setTrees = function(path){
 //ARGUMENTS:
 //	character(String) - character name
 //	numOfOptions(int) - number of options for that character
-//RETURN [int] uids - an array of the action uids available to execute
+//RETURN [[int]] uids - an array of the paths of the action uids available to execute
 StoryTree.prototype.getOptions = function(character, numOfOptions){
 
 	var that = this;
@@ -620,10 +657,14 @@ StoryTree.prototype.getOptions = function(character, numOfOptions){
 			}
 
 			//We can assume now that we've succesfully passed the preconditions
+			//This means we can add the action to the uid list
+			uidList.push(actionUID);
+
 			//If it's a leaf, we push it onto the return list and decrement the counter for max returns
 			//If not a leaf, we keep traversing
 			if(actionObj.isLeaf()){
-				uids.push(actionUID);
+				uids.push(uidList);
+				uidList = [];
 				if(actionObj.cls !== ""){
 					classes.push(actionObj.cls);
 				}
@@ -639,13 +680,14 @@ StoryTree.prototype.getOptions = function(character, numOfOptions){
 	//loop through each top action, traversing through their corresponding trees
 	//keep track of which actions we've added and how many were added
 	var uids = [];
+	var uidList = [];
 	var counter = numOfOptions;
 	var classes = [];
 	for(var j = 0; j < tree.firsts.length; j++){
 
 		
-
-		var actionObj = tree.actions[tree.firsts[j]];
+		var actionUID = tree.firsts[j];
+		var actionObj = tree.actions[actionUID];
 
 		//evaluate each precondition for the child object
 		var trig = false;
@@ -667,10 +709,14 @@ StoryTree.prototype.getOptions = function(character, numOfOptions){
 		//If it's a leaf, we push it onto the return list and decrement the counter for max returns
 		//If not a leaf, we keep traversing
 		if(actionObj.isLeaf()){
-			uids.push(tree.firsts[j]);
+			uids.push([actionUID]);
+			if(actionObj.cls !== ""){
+				classes.push(actionObj.cls);
+			}
 			counter--;
 		} else {
-			traverse(tree.firsts[j]);
+			uidList.push(actionUID);
+			traverse(actionUID);
 		}
 
 	}
@@ -735,9 +781,9 @@ StoryTree.prototype.isLoaded = function(){
 //Executes a given action for a given character
 //ARGUMENTS:
 //	character(String) - Name of the character
-//	uid(int) - uid of the action to be executed
+//	uidPath([int]) - uids of the action path to be executed
 //RETURN void
-StoryTree.prototype.executeAction = function(character, uid){
+StoryTree.prototype.executeAction = function(character, uidPath){
 	var that = this;
 
 	//check to see if we're still loading JSON
@@ -761,15 +807,24 @@ StoryTree.prototype.executeAction = function(character, uid){
 		return;
 	}
 
-	//Private function, recursively executes an action and executes all parents
-	//ARGUMENTS:
-	//	uid(int) - uid of the action to execute
-	function execute(uid){
+	//Loop through each action in the uidList and execute that action
+	for(var i = 0; i < uidPath.length; i++){
 
-		//loop through all expressions of the action
+		//get the object of the action
+		var uid = uidPath[i];
 		var actionObj = tree.actions[uid];
-		for(var i = 0; i < actionObj.expressions.length; i++){
-			var exp = actionObj.expressions[i];
+
+		//If the uid is undefined, that means that there's no corresponding action
+		//Error checking
+		if(tree.actions[uid] == undefined){
+			alert("executeAction() Error: There's no uid with the number " + uid);
+			return;
+		}
+
+		//Now loop through all expressions of the action
+		for(var j = 0; j < actionObj.expressions.length; j++){
+			var exp = actionObj.expressions[j];
+			//console.log(actionObj);
 
 			//Get the correct character for that expression
 			var char;
@@ -800,24 +855,7 @@ StoryTree.prototype.executeAction = function(character, uid){
 			char.parseExpression(exp.cls, exp.type, exp.operation, exp.value);
 
 		}
-
-		//if the action is a first, then finish the stack
-		//if not, recursively call execute on parent
-		if(actionObj.isFirst()){
-			return;
-		} else {
-			execute(actionObj.parent);
-		}
 	}
-
-	//If the uid is undefined, that means that there's no corresponding action
-	//Error checking
-	if(tree.actions[uid] == undefined){
-		alert("executeAction() Error: There's no uid with the number " + uid);
-		return;
-	}
-
-	execute(uid);
 }
 
 //StoryTree.getCharacters()

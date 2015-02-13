@@ -38,7 +38,7 @@ var Expression = function(character, cls, type, operation, value){
 *	preconditions([Precondition]) - array of preconditions to access action
 *	expressions([Expression]) - array of Expressions to evaluate when the action is completed
 *	children([int]) - child Action ids
-*	parent(int) - uid of the parent action
+*	parents([int]) - uids of the parent actions
 *	class(String) - used to group actions together
 */
 var Action = function(name, uid){
@@ -49,7 +49,7 @@ var Action = function(name, uid){
 	this.expressions = [];
 
 	this.children = [];
-	this.parent = 0;
+	this.parents = [];
 
 	this.cls = ""; 
 }
@@ -70,8 +70,8 @@ Action.prototype.addChild = function(uid){
 }
 
 //Sets the pointer to the parent uid
-Action.prototype.setParent = function(uid){
-	this.parent = uid;
+Action.prototype.addParent = function(uid){
+	this.parents.push(uid);
 }
 
 //Sets the class of the action
@@ -86,7 +86,7 @@ Action.prototype.isLeaf = function(){
 
 //Test to see if the Action is a first
 Action.prototype.isFirst = function(){
-	return (this.parent === 0);
+	return (this.parents.length === 0);
 }
 
 /* STree class
@@ -111,7 +111,7 @@ STree.prototype.mapAction = function(name, uid){
 }
 
 //Sets the class of an action, given a class and a uid
-STree.prototype.setClass = function(uid, cls){
+STree.prototype.setClasses = function(uid, cls){
 
 	var that = this;
 
@@ -120,6 +120,8 @@ STree.prototype.setClass = function(uid, cls){
 		var actionObj = that.actions[uid];
 
 		for(var i = 0; i < actionObj.children.length; i++){
+			var childUID = actionObj.children[i];
+
 			var child = that.actions[actionObj.children[i]];
 
 			child.setClass(cls);

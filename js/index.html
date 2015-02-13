@@ -29,7 +29,8 @@
 				var string = "Actions: \n";
 				var options = storyTree.getOptions("Trish", 3);
 				for(var i = 0; i < options.length; i++){
-					string += "<li> uid: " + options[i] + ", name: " + storyTree.getActionName("Trish", options[i]) + "</li>";
+					console.log(options[i]);
+					//string += "<li> uid: " + options[i] + ", name: " + storyTree.getActionName("Trish", options[i]) + "</li>";
 				}
 
 				document.getElementById("actions").innerHTML = string;
