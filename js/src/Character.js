@@ -120,6 +120,46 @@ Character.prototype.parseExpression = function(cls, type, operation, value){
 	}
 }
 
+//Character.setStoryTree(tree)
+//Set the character's story tree
+//ARGUMENTS:
+//	tree(STree) - The story Tree
 Character.prototype.setStoryTree = function(tree){
 	this.tree = tree;
+}
+
+/*CharacterDB Class, contains a lookup table of all characters for easy lookup
+*
+*	characters([Character]) - The lookup table of all characters
+*
+*/
+var CharacterDB = function(){
+	this.characters = {};
+}
+
+//CharacterDB.addCharacter(name)
+//Add a character to the database
+//ARGUMENTS:
+//	name(string) - The name of the new character
+CharacterDB.prototype.addCharacter = function(name){
+	this.characters[name] = new Character(name);
+}
+
+//CharacterDB.getCharacter(name)
+//Return the proper character in the database
+//ARGUMENTS:
+//	name(string) - The name of the character you want to find
+CharacterDB.prototype.getCharacter = function(name){
+	if(this.characters[name] == undefined) alert("CharacterDB.getCharacter() Error: There's no character with the name " + name);
+	return this.characters[name];
+}
+
+//CharacterDB.checkCharacters(chars, characteristics)
+//Check the JSON formatting of the list of characters, as well as their characteristics
+//ARGUMENTS:
+//	chars([string]) - array of all characters to be added
+//	characteristics([Characteristics]) - array of characteristics to be added
+//RETURN bool - is the JSON data bad
+CharacterDB.prototype.checkCharacters = function(chars, characteristics){
+
 }
