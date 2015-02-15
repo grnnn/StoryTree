@@ -95,9 +95,7 @@ StoryTree.prototype.setCharacters = function(path){
 	    // Success!
 	    var data = JSON.parse(request.responseText);
 
-
-
-	    //Push new character objects into the game, as well as characters for World and Player
+	    //Push new character objects into the game
 	    var chars = data.characters;
 	    for(var i = 0; i < chars.length; i++){
 	    	that.characterDB.addCharacter(chars[i]);
@@ -109,23 +107,16 @@ StoryTree.prototype.setCharacters = function(path){
 	    var characteristics = data.characteristics;
 	    for(var j = 0; j < characteristics.length; j++){
 	    	//Find the correct corresponding character for that characteristic
-	    	/*for(var k = 0; k < that.characters.length; k++){
-	    		if(characteristics[j].name === that.characters[k].name){
+	    	var character = that.characterDB.getCharacter(characteristics[j].name);
+	    	//Check if that sdbClass and type exists
+			var sdbClass = that.SDB.SDBClasses[characteristics[j].class	];
+			if(sdbClass.types[characteristics[j].type]){
+				//Now add the characteristic to the correct character
+				character.addCharacteristic(characteristics[j].class, characteristics[j].type, sdbClass.min, sdbClass.max, sdbClass.isBoolean, sdbClass.defaultVal);
 
-	    			//Check if that sdbClass and type exists
-	    			var sdbClass = that.SDB.SDBClasses[characteristics[j].class];
-	    			if(sdbClass.types[characteristics[j].type]){
-
-	    				//Now add the characteristic to the correct character
-	    				that.characters[k].addCharacteristic(characteristics[j].class, characteristics[j].type, sdbClass.min, sdbClass.max, sdbClass.isBoolean, sdbClass.defaultVal);
-
-	    				//Manually set the value of that characteristic
-	    				that.characters[k].parseExpression(characteristics[j].class, characteristics[j].type, "=", characteristics[j].value);
-	    			}
-	    		}
-	    	}*/
-
-
+				//Manually set the value of that characteristic
+				character.parseExpression(characteristics[j].class, characteristics[j].type, "=", characteristics[j].value);
+			}
 	    }
 
 	  }
@@ -156,23 +147,28 @@ StoryTree.prototype.setTrees = function(path){
 
 	//First check to see if characters have been loaded
 	//We're loading JSON asynchronously, so it is a bit wonky with the timing
-	if(this.characters.length === 0){
+	if(this.characterDB.isEmpty()){
 		var setT = function(){that.setTrees(path);}; 
 		//reload function every 100 milliseconds
 		window.setTimeout(setT, 100);
 		return;
 	}
 
-	//First, get a reference to all characters that aren't called "World" or "Player"
-	var characters = [];
-	for(var a = 0; a < this.characters.length; a++){
-		if(this.characters[a].name !== "World" && this.characters[a].name !== "Player") characters.push(this.characters[a]);
+	//Do a check for bad formatting in the path
+	if(path.substr(path.length - 1) !== "/"){
+		alert("StoryTree.setTrees() error: pathname to folder needs to end with a /");
+		return;
 	}
+
+	//First, get a reference to all characters
+	var characters = this.characterDB.getListOfCharacters();
+
 
 	//Loop through each character, adding their corresponding speak tree to the path name
 	for(var b = 0; b < characters.length; b++){
-		var char = characters[b];
-		var newPath = path + char.name + ".json";
+		var myChar = that.characterDB.getCharacter(characters[b]);
+		var newPath = path + myChar.name + ".json";
+
 
 		var request = new XMLHttpRequest();
 		request.open('GET', newPath, true);
@@ -184,9 +180,11 @@ StoryTree.prototype.setTrees = function(path){
 
 		    //Code once data has been parsed
 
+		    console.log(myChar);
+
 		    //Create Speak tree and set it to the character
 		    var sTree = new STree();
-		    char.setStoryTree(sTree);
+		    myChar.setStoryTree(sTree);
 
 		    //Loop through each action
 		    for(var c = 0; c < data.length; c++){
@@ -250,7 +248,7 @@ StoryTree.prototype.setTrees = function(path){
 		};
 
 		request.onerror = function() {
-		  alert("Unable to parse character Speak Tree from this path: " + newPath);
+		  console.log("Unable to parse character Speak Tree from this path: " + newPath);
 		  that.loadingTree = false;
 		};
 
@@ -277,12 +275,7 @@ StoryTree.prototype.getOptions = function(character, numOfOptions){
 	}
 
 	//Get the character's corresponding speak tree
-	var tree;
-	for(var i = 0; i < this.characters.length; i++){
-		if(character === this.characters[i].name){
-			tree = this.characters[i].tree;
-		}
-	}
+	var tree = that.characterDB.getCharacter(character).tree;
 
 	//If there's no tree, that means there's no character with that name
 	//Error checking
@@ -298,14 +291,8 @@ StoryTree.prototype.getOptions = function(character, numOfOptions){
 	//RETURN bool - is the precondition true
 	function evaluatePrecondition(precondition){			
 		//find the character for that characteristic
-		var characteristics;
-		var char;
-		for(var i = 0; i < that.characters.length; i++){
-			if(precondition.characterName === that.characters[i].name){
-				characteristics = that.characters[i].characteristics;
-				char = that.characters[i];
-			}
-		}
+		var char = that.characterDB.getCharacter(precondition.characterName);
+		var characteristics = char.characteristics;
 
 		//Get the characteristic
 		var characteristic = char.characteristics[precondition.cls][precondition.type];
@@ -405,6 +392,7 @@ StoryTree.prototype.getOptions = function(character, numOfOptions){
 	var uidList = [];
 	var counter = numOfOptions;
 	var classes = [];
+	console.log(tree);
 	for(var j = 0; j < tree.firsts.length; j++){
 
 		
@@ -467,10 +455,7 @@ StoryTree.prototype.getActionName = function(character, uid){
 	}
 
 	//find the right character and their tree
-	var tree;
-	for(var i = 0; i < this.characters.length; i++){
-		if(character === this.characters[i].name) tree = this.characters[i].tree;
-	}
+	var tree = that.characterDB.getCharacter(character).tree;
 
 	//If the tree is undefined, that means that there's no character with that name
 	//Error checking
@@ -517,10 +502,7 @@ StoryTree.prototype.executeAction = function(character, uidPath){
 	}
 
 	//Get action tree for character
-	var tree;
-	for(var i = 0; i < this.characters.length; i++){
-		if(this.characters[i].name === character) tree = this.characters[i].tree;
-	}
+	var tree = that.characterDB.getCharacter(character).tree;
 
 	//If the tree is undefined, that means that there's no character with that name
 	//Error checking
@@ -549,13 +531,7 @@ StoryTree.prototype.executeAction = function(character, uidPath){
 			//console.log(actionObj);
 
 			//Get the correct character for that expression
-			var char;
-			for(var k = 0; k < that.characters.length; k++){
-				if(that.characters[k].name === exp.characterName) {
-					char = that.characters[k];
-					break;
-				}
-			}
+			var char = that.characterDB.getCharacter(exp.characterName);
 
 			//Check if the characteristic exists for that character, 
 			//If not, we just use the default value for that character
@@ -584,19 +560,10 @@ StoryTree.prototype.executeAction = function(character, uidPath){
 //Get the names of all available characters
 //	return([string]) - list of all characters that are available in the StoryTree
 StoryTree.prototype.getCharacters = function(){
-	var charList = [];
-	for(var i = 0; i < this.characters.length; i++){
-		charList.push(this.characters[i].name);
-	}
-	return charList;
+	return this.characterDB.getListOfCharacters();
 }
 
 StoryTree.prototype.getCharacteristics = function(character){
-	for(var i = 0; i < this.characters.length; i++){
-		if(this.characters[i].name === character) return character.characteristics;
-	}
-
-	//If no character is found by the end of the loop, then that character doesn't exist
-	//Error checking
-	alert("getCharacteristics() Error: the character " + character + " doesn't exist");
+	var characteristics = this.characterDB.getCharacter(character).characteristics;
+	return characteristics;
 }

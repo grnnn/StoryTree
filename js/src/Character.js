@@ -154,6 +154,29 @@ CharacterDB.prototype.getCharacter = function(name){
 	return this.characters[name];
 }
 
+//CharacterDB.isEmpty()
+//Is the database empty?
+//	ARGUMENTS:
+//	RETURN bool 
+CharacterDB.prototype.isEmpty = function(){
+	var counter = 0;
+	for(var char in this.characters){
+		counter++;
+	}
+	return (counter === 0);
+}
+
+//CharacterDB.getListOfCharacters()
+//Retrieve the list of all loaded characters
+//	Return [string]
+CharacterDB.prototype.getListOfCharacters = function(){
+	var chars = [];
+	for(var charac in this.characters){
+		chars.push(charac);
+	}
+	return chars;
+}
+
 //CharacterDB.checkCharacters(chars, characteristics)
 //Check the JSON formatting of the list of characters, as well as their characteristics
 //ARGUMENTS:
