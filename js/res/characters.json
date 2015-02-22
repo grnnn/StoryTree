@@ -29,7 +29,8 @@
 		{
 			"name" : "World", 
 			"class" : "location",
-			"type" : "underwater"
+			"type" : "underwater",
+			"value" : true
 		},
 		{
 			"name" : "Player",

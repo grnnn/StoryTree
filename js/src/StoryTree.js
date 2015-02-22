@@ -95,6 +95,9 @@ StoryTree.prototype.setCharacters = function(path){
 	    // Success!
 	    var data = JSON.parse(request.responseText);
 
+	    that.badFormatting = that.characterDB.checkCharacters(data.characters);
+	    if(that.badFormatting) return;
+
 	    //Push new character objects into the game
 	    var chars = data.characters;
 	    for(var i = 0; i < chars.length; i++){
@@ -106,6 +109,13 @@ StoryTree.prototype.setCharacters = function(path){
 	    //Loop through each characteristic
 	    var characteristics = data.characteristics;
 	    for(var j = 0; j < characteristics.length; j++){
+
+	    	//Check the formatting of the characteristic
+	    	that.badFormatting = that.characterDB.checkCharacteristic(characteristics[j].name,
+	    															  characteristics[j].class,
+	    															  characteristics[j].type,
+	    															  characteristics[j].value)
+
 	    	//Find the correct corresponding character for that characteristic
 	    	var character = that.characterDB.getCharacter(characteristics[j].name);
 	    	//Check if that sdbClass and type exists
@@ -169,22 +179,24 @@ StoryTree.prototype.setTrees = function(path){
 		var myChar = that.characterDB.getCharacter(characters[b]);
 		var newPath = path + myChar.name + ".json";
 
-
 		var request = new XMLHttpRequest();
-		request.open('GET', newPath, true);
+		request.c = myChar.name;
+		request.p = newPath;
+		request.open('GET', request.p, true);
 
 		request.onload = function() {
-		  if (request.status >= 200 && request.status < 400) {
+		  if (this.status >= 200 && this.status < 400) {
 		    // Success!
-		    var data = JSON.parse(request.responseText);
+		    var data = JSON.parse(this.responseText);
 
 		    //Code once data has been parsed
 
-		    console.log(myChar);
+		    //get proper character
+		    var char = that.characterDB.getCharacter(this.c);
 
 		    //Create Speak tree and set it to the character
 		    var sTree = new STree();
-		    myChar.setStoryTree(sTree);
+		    char.setStoryTree(sTree);
 
 		    //Loop through each action
 		    for(var c = 0; c < data.length; c++){
@@ -225,12 +237,6 @@ StoryTree.prototype.setTrees = function(path){
 			    	}
 			    }
 
-		    	//Set the action's parents
-		    	if(action.parents !== undefined){
-		    		for(var g = 0; g < action.parents.length; g++){
-		    			actionObj.addParent(action.parents[g]);
-		    		}
-		    	}
 		    }
 
 		    //Go through each action again to set the classes
@@ -392,7 +398,6 @@ StoryTree.prototype.getOptions = function(character, numOfOptions){
 	var uidList = [];
 	var counter = numOfOptions;
 	var classes = [];
-	console.log(tree);
 	for(var j = 0; j < tree.firsts.length; j++){
 
 		

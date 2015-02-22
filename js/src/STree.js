@@ -14,6 +14,68 @@ var Precondition = function(character, cls, type, operation, value){
 	this.value = value;
 }
 
+//Check the formatting of the precondition fields, return error message of what could be wrong
+//ARGUMENTS:
+//	character(string) - the name of the character this applies to
+//	cls(string) - the name of the class this evaluates
+//	type(string) - the name of the type
+//	operation(string) - can be ">", "<", and "=="
+//	value(bool or int) - the value to be evaluated
+//RETURN string - the error string
+Precondition.prototype.checkPrecondition = function(character, cls, type, operation, value){
+	//Track if the formatting is bad somewhere
+	//Also track error messages
+	var isBad = false;
+	var errorString = "";
+
+	//Check to see if the character is a string
+	if(typeof character !== "string"){
+		isBad = true;
+		errorString += "The character of your precondition is not a string. \n";
+	}
+
+	//Check to see if the class is a string
+	if(typeof cls !== "string"){
+		isBad = true;
+		errorString += "The class of your precondition is not a string. \n";
+	}
+
+	//Check to see if the type is a string
+	if(typeof type !== "string"){
+		isBad = true;
+		errorString += "The type of your precondition is not a string. \n";
+	}
+
+	//Check to see if the operation makes sense
+	if(operation !== ">" && operation !== "<" && operation !== "=="){
+		isBad = true;
+		errorString += "The operation of your precondition is not one of these three strings: '==', '<', '>'. \n";
+	}
+
+	//check if the value is an int or bool
+	if(typeof value !== "boolean" && typeof value !== "number"){
+		isBad = true;
+		errorString += "The value of your precondition is not a boolean or an int. \n";
+	}
+
+	//We want to build our error message up if the precondition object has gone bad
+	if(isBad){
+		errorString = "***Error: Improper Precondition format.*** \n \n "
+			+ "You're receiving this because you improperly formatted one of your Precondition objects. \n"
+			+ "The bad Precondition: \n" 
+			+ " -- character: " + character + " \n"
+			+ " -- class: " + cls + " \n"
+			+ " -- type: " + type + " \n"
+			+ " -- operation: " + operation + " \n"
+			+ " -- value: " + value + " \n\n"
+			+ "Other error info: \n" + errorString;
+	}
+
+	//Return that string to be reported in the overall action check function
+	return errorString;
+
+}
+
 /* Expression class, used to change characteristics
 *	
 *	character(string) - name of the character to evaluate
@@ -28,6 +90,68 @@ var Expression = function(character, cls, type, operation, value){
 	this.type = type;
 	this.operation = operation;
 	this.value = value;
+}
+
+//Check the formatting of the expression fields, return error message of what could be wrong
+//ARGUMENTS:
+//	character(string) - the name of the character this applies to
+//	cls(string) - the name of the class this evaluates
+//	type(string) - the name of the type
+//	operation(string) - can be "+", "-", and "="
+//	value(bool or int) - the value to be evaluated
+//RETURN string - the error string
+Expression.prototype.checkExpression = function(character, cls, type, operation, value){
+	//Track if the formatting is bad somewhere
+	//Also track error messages
+	var isBad = false;
+	var errorString = "";
+
+	//Check to see if the character is a string
+	if(typeof character !== "string"){
+		isBad = true;
+		errorString += "The character of your expression is not a string. \n";
+	}
+
+	//Check to see if the class is a string
+	if(typeof cls !== "string"){
+		isBad = true;
+		errorString += "The class of your expression is not a string. \n";
+	}
+
+	//Check to see if the type is a string
+	if(typeof type !== "string"){
+		isBad = true;
+		errorString += "The type of your expression is not a string. \n";
+	}
+
+	//Check to see if the operation makes sense
+	if(operation !== "+" && operation !== "-" && operation !== "="){
+		isBad = true;
+		errorString += "The operation of your expression is not one of these three strings: '=', '+', '-'. \n";
+	}
+
+	//check if the value is an int or bool
+	if(typeof value !== "boolean" && typeof value !== "number"){
+		isBad = true;
+		errorString += "The value of your expression is not a boolean or an int. \n";
+	}
+
+	//We want to build our error message up if the expression object has gone bad
+	if(isBad){
+		errorString = "***Error: Improper Expression format.*** \n \n "
+			+ "You're receiving this because you improperly formatted one of your Expression objects. \n"
+			+ "The bad Precondition: \n" 
+			+ " -- character: " + character + " \n"
+			+ " -- class: " + cls + " \n"
+			+ " -- type: " + type + " \n"
+			+ " -- operation: " + operation + " \n"
+			+ " -- value: " + value + " \n\n"
+			+ "Other error info: \n" + errorString;
+	}
+
+	//Return that string to be reported in the overall action check function
+	return errorString;
+
 }
 
 /* Action class, an action that can be executed by interacting with a character
@@ -49,7 +173,6 @@ var Action = function(name, uid){
 	this.expressions = [];
 
 	this.children = [];
-	this.parents = [];
 
 	this.cls = ""; 
 }
@@ -87,6 +210,19 @@ Action.prototype.isLeaf = function(){
 //Test to see if the Action is a first
 Action.prototype.isFirst = function(){
 	return (this.parents.length === 0);
+}
+
+//Check the formatting and usage of the action being made
+//ARGUMENTS:
+//	name(string or undefined) - the name of the action
+//	uid(int) - the unique id of the action 
+//	first(bool or undefined) - is the action the first?
+//	cls(string or undefined) - the category of the action
+//	preconditions([{}]) - List of Precondition objects to be evaluated
+//	expressions([{}]) - List of Expression objects to be evaluated
+//RETURN bool - is the action bad
+Action.prototype.checkAction = function(name, uid, first, cls, preconditions, expressions){
+
 }
 
 /* STree class
@@ -135,4 +271,12 @@ STree.prototype.setClasses = function(uid, cls){
 	}
 
 	setChildClass(uid);
+}
+
+//Because action trees are created one action at a time, there are a thing that we should try to catch after it's built
+//We need to check if there are any infinite loops in the tree
+//ARGUMENTS: void
+//RETURN bool - true if the tree has an infinite loop
+STree.prototype.checkActionTree = function(){
+
 }

@@ -23,6 +23,6 @@
 	"class" : "location",
 	"types" : ["underwater", "volcano"],
 	"isBoolean" : true,
-	"defaultVal" : true
+	"defaultVal" : false
 }
 ]

@@ -177,12 +177,102 @@ CharacterDB.prototype.getListOfCharacters = function(){
 	return chars;
 }
 
-//CharacterDB.checkCharacters(chars, characteristics)
-//Check the JSON formatting of the list of characters, as well as their characteristics
+//CharacterDB.checkCharacters(chars)
+//Check the JSON formatting of the list of characters
 //ARGUMENTS:
 //	chars([string]) - array of all characters to be added
-//	characteristics([Characteristics]) - array of characteristics to be added
 //RETURN bool - is the JSON data bad
-CharacterDB.prototype.checkCharacters = function(chars, characteristics){
+CharacterDB.prototype.checkCharacters = function(chars){
+	//Track if the formatting is bad somewhere
+	//Also track error messages
+	var isBad = false;
+	var errorString = "";
 
+	//First check the characters to see if they are in an array
+	if(Object.prototype.toString.call( chars ) !== '[object Array]'){
+		isBad  = true;
+		errorString += "Your characters are not in an array. \n"
+	} else {
+		for(var i = 0; i < chars.length; i++){
+			if(typeof chars[i] !== "string"){
+				isBad = true;
+				errorString += "Your character at position " + i + " is not a string. \n";
+			}
+		}
+	}
+
+	//If the characters are bad somehow, we alert a giant error message
+	if(isBad){
+
+
+		//Build up our characters in a string, since the dafault string for an array is [Object Array]
+		var charArray = "[" + chars[0];
+		for(var j = 0; j < chars.length; j++){
+			charArray += (", " + chars[j]);
+		}
+		charArray += "]";
+
+		//Alert the user of all of the bad formatting
+		alert("***Error: Improper Character format.*** \n \n "
+			+ "You're receiving this because you improperly formatted your list of characters in your character file. \n"
+			+ "Your characters: \n" 
+			+ charArray + " \n\n"
+			+ "Other error info: \n" + errorString);
+	}
+
+	return isBad;
+}
+
+//Check the JSON formatting of a characteristic
+//ARGUMENTS:
+//	name(string) - name of the character
+//	cls(string) - name of the class
+//	type(string) - type of that class
+//	val(int or bool) - value of the class
+CharacterDB.prototype.checkCharacteristic = function(name, cls, type, val){
+	//Track if the formatting is bad somewhere
+	//Also track error messages
+	var isBad = false;
+	var errorString = "";
+
+	//Check if the name is a string, if it is, check if it's in the database
+	if(typeof name !== "string"){
+		isBad = true;
+		errorString += "Your character name is not a string. \n";
+	} else if(this.characters[name] == undefined){
+		isBad = true;
+		errorString += "You didn't define the character " + name + " in your character file before using them in a characteristic. \n"
+	}
+
+	//Check to see if the class is a string too
+	if(typeof cls !== "string"){
+		isBad = true;
+		errorString += "Your class is not a string. \n";
+	}
+
+	//Check to see if the type is a string
+	if(typeof type !== "string"){
+		isBad = true;
+		errorString += "Your type is not a string. \n";
+	}
+
+	//Check to see if the value is a bool or int
+	if(typeof val !== "boolean" && typeof val !== "number"){
+		isBad = true;
+		errorString += "Your value is not a boolean or an int. \n";
+	}
+
+	if(isBad){
+		//Alert the user of all of the bad formatting
+		alert("***Error: Improper Characteristic format.*** \n \n "
+			+ "You're receiving this because you improperly formatted one of your Characteristic objects in your Character JSON file. \n"
+			+ "The bad Characteristic: \n" 
+			+ " -- name: " + name + " \n"
+			+ " -- class: " + cls + " \n"
+			+ " -- type: " + type + " \n"
+			+ " -- value: " + val + " \n\n"
+			+ "Other error info: \n" + errorString);
+	}
+
+	return isBad;
 }

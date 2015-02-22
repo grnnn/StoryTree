@@ -72,7 +72,7 @@ SDB.prototype.checkSDB = function(cls, types, isBoolean, min, max, defaultVal){
 	var isBad = false;
 	var errorString = "";
 
-	//Also, since types are an array we hav to build into a string, 
+	//Also, since types are an array we have to build into a string, 
 	//we need to track spefically how we want to error track types
 	var typesBad = false;
 
@@ -171,7 +171,7 @@ SDB.prototype.checkSDB = function(cls, types, isBoolean, min, max, defaultVal){
 		
 		//Alert the user of all of the bad formatting
 		alert("***Error: Improper SDB format.*** \n \n "
-			+ "Your receiving this because you improperly formatted one of your SDB Class objects in your SDB JSON file. \n"
+			+ "You're receiving this because you improperly formatted one of your SDB Class objects in your SDB JSON file. \n"
 			+ "The bad SDB Class: \n" 
 			+ " -- class: " + cls + " \n"
 			+ " -- types: " + typeArray + " \n"
