@@ -203,6 +203,10 @@ StoryTree.prototype.setTrees = function(path){
 
 		    	var action = data[c];
 
+		    	//Check the formatting of the action before anything else
+		    	that.badFormatting = Action.prototype.checkAction(action.name, action.uid, action.first, action.class, action.preconditions, action.expressions);
+	    		if(that.badFormatting) return;
+
 		    	//If the action is labeled as a first, set it to be a first
 		    	if(action.first){
 		    		sTree.addFirst(action.uid);
@@ -239,6 +243,10 @@ StoryTree.prototype.setTrees = function(path){
 
 		    }
 
+		    //Now check the sTree for any loops
+		    that.badFormatting = sTree.checkActionTree();
+	    	if(that.badFormatting) return;
+
 		    //Go through each action again to set the classes
 		    for(var d = 0; d < data.length; d++){
 		    	var action = data[d];
@@ -248,6 +256,8 @@ StoryTree.prototype.setTrees = function(path){
 		    		sTree.setClasses(action.uid, action.class);
 		    	}
 		    }
+
+		    
 
 		  }
 		  that.loadingTree = false;
