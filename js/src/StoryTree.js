@@ -575,10 +575,144 @@ StoryTree.prototype.executeAction = function(character, uidPath){
 //Get the names of all available characters
 //	return([string]) - list of all characters that are available in the StoryTree
 StoryTree.prototype.getCharacters = function(){
+
+	//check to see if we're still loading JSON
+	var that = this;
+	if(this.loadingSDB || this.loadingCharacters || this.loadingTree){
+		var l = function(){that.getCharacters();};
+		console.log("Wait 500 ms for the JSONs to load....");
+		window.setTimeout(l, 500);
+		return;
+	}
+
 	return this.characterDB.getListOfCharacters();
 }
 
+//StoryTree.setCharacteristic()
+//Sets a characteristic for a character
+//ARGUMENTS:
+//	name(string) - name of character
+//	cls(string) - class of characteristic
+//	type(string) - type of characteristic
+//	value(int or bool) - value of characteristic
+//RETURN void
+StoryTree.prototype.setCharacteristic = function(name, cls, type, value){
+
+	//check to see if we're still loading JSON
+	var that = this;
+	if(this.loadingSDB || this.loadingCharacters || this.loadingTree){
+		var l = function(){that.setCharacteristic(name, cls, type, value);};
+		console.log("Wait 500 ms for the JSONs to load....");
+		window.setTimeout(l, 500);
+		return;
+	}
+
+	//First error check all fields
+	var isBad = false;
+	var errorString = "";
+
+	//Check name type
+	if(typeof name !== "string"){
+		isBad = true;
+		errorString += "Your character name is not a string. \n";
+	}
+
+	//Check if cls is a string
+	if(typeof cls !== "string"){
+		isBad = true;
+		errorString += "Your class name is not a string. \n";
+	}
+
+	//Check if type is a string
+	if(typeof type !== "string"){
+		isBad = true;
+		errorString += "Your type name is not a string. \n";
+	}
+
+	//Check if value is an int or bool
+	if(typeof value !== "number" && typeof value !== "boolean"){
+		isBad = true;
+		errorString += "Your value is not an int or boolean. \n"
+	}
+
+	//Print out the error message if anything has gone bad
+	if(isBad){
+		alert("setCharacteristic() Error: \n"
+			+ " -- name: " + name + "\n"
+			+ " -- class: " + cls + "\n"
+			+ " -- type: " + type + "\n"
+			+ " -- value: " + value + "\n"
+			+ "Other error info: \n " + errorString);
+		return;
+	}
+
+	//Find out if the SDBClass is defined
+	var sdbcls = this.SDB.SDBClasses[cls];
+	if(sdbcls){
+		//Now find out if the type exists for that class
+		if(sdbcls[type]){
+
+			//Last, but not least, check if the character exists
+			if(this.characterDB.getCharacter[name]){
+				//Great, now we can finally set the characteristic
+
+				//Get the character
+				var character = this.characterDB.getCharacter(name);
+
+				//Now add the characteristic to the correct character
+				character.addCharacteristic(cls, type, sdbcls.min, sdbcls.max, sdbcls.isBoolean, sdbcls.defaultVal);
+
+				//Manually set the value of that characteristic
+				character.parseExpression(cls, type, "=", value);
+
+
+			} else {
+				alert("setCharacteristic() Error: The character does not exist.");
+			}
+		} else {
+			alert("setCharacteristic() Error: The type for the SDB Class does not exist.");
+		}
+	} else {
+		alert("setCharacteristic() Error: The SDB Class does not exist.");
+	}
+}
+
+
+//StoryTree.getCharacteristics()
+//ARGUMENTS:
+//	character(string) - the name of the character whose characteristics we want
+//RETURN [ {cls(string), type(string), value(string)} ] (a list of basic javascript objects with relevant info)
 StoryTree.prototype.getCharacteristics = function(character){
+
+	//check to see if we're still loading JSON
+	var that = this;
+	if(this.loadingSDB || this.loadingCharacters || this.loadingTree){
+		var l = function(){that.getCharacteristics(character);};
+		console.log("Wait 500 ms for the JSONs to load....");
+		window.setTimeout(l, 500);
+		return;
+	}
+
+	//First error check to see if the character exists
+	if(!this.characterDB.getCharacter(character)){
+		alert("getCharacteristics() Error: The character does not exist.");
+	}
+
+	//Get our proper characteristic objects (to be converted to basic objects)
 	var characteristics = this.characterDB.getCharacter(character).characteristics;
-	return characteristics;
+
+	//Build up the list of objects
+	var chars = [];
+	for(var i = 0; i < characteristics.length; i++){
+		var characteristic = characteristics[i];
+
+		chars.push({
+			class: characteristic.className,
+			type: characteristic.type,
+			value: characteristic.value
+		})
+	}
+
+	//Return that list
+	return chars;
 }

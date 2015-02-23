@@ -117,7 +117,7 @@ Character.prototype.setCharacteristic = function(characteristic){
 Character.prototype.parseExpression = function(cls, type, operation, value){
 	if(this.characteristics[cls][type] !== undefined) {
 		this.characteristics[cls][type].parseExpression(operation, value);
-	}
+	} 
 }
 
 //Character.setStoryTree(tree)
