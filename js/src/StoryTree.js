@@ -78,7 +78,7 @@ StoryTree.prototype.setCharacters = function(path){
 	//First check to see if SDB has been loaded
 	//We're loading JSON asynchronously, so it is a bit wonky with the timing
 	if(this.SDB.isEmpty()){
-		var setT = function(){that.setCharacters(path);}; 
+		var setT = function(){that.setCharacters(path);};
 		//reload function every 100 milliseconds
 		window.setTimeout(setT, 100);
 		return;
@@ -158,7 +158,7 @@ StoryTree.prototype.setTrees = function(path){
 	//First check to see if characters have been loaded
 	//We're loading JSON asynchronously, so it is a bit wonky with the timing
 	if(this.characterDB.isEmpty()){
-		var setT = function(){that.setTrees(path);}; 
+		var setT = function(){that.setTrees(path);};
 		//reload function every 100 milliseconds
 		window.setTimeout(setT, 100);
 		return;
@@ -257,7 +257,7 @@ StoryTree.prototype.setTrees = function(path){
 		    	}
 		    }
 
-		    
+
 
 		  }
 		  that.loadingTree = false;
@@ -283,7 +283,7 @@ StoryTree.prototype.getOptions = function(character, numOfOptions){
 	var that = this;
 
 	//check to see if we're still loading JSON
-	if(this.loadingSDB || this.loadingCharacters || this.loadingTree){
+	if(!this.isLoaded()){
 		var l = function(){that.getOptions(character, numOfOptions)};
 		console.log("Wait 500 ms for the JSONs to load....");
 		window.setTimeout(l, 500);
@@ -305,7 +305,7 @@ StoryTree.prototype.getOptions = function(character, numOfOptions){
 	//ARGUMENTS:
 	//	precondition(Precondition) - the precondition to be evaluated
 	//RETURN bool - is the precondition true
-	function evaluatePrecondition(precondition){			
+	function evaluatePrecondition(precondition){
 		//find the character for that characteristic
 		var char = that.characterDB.getCharacter(precondition.characterName);
 		var characteristics = char.characteristics;
@@ -398,7 +398,7 @@ StoryTree.prototype.getOptions = function(character, numOfOptions){
 				traverse(actionUID);
 			}
 
-			
+
 		}
 	}
 
@@ -410,7 +410,7 @@ StoryTree.prototype.getOptions = function(character, numOfOptions){
 	var classes = [];
 	for(var j = 0; j < tree.firsts.length; j++){
 
-		
+
 		var actionUID = tree.firsts[j];
 		var actionObj = tree.actions[actionUID];
 
@@ -462,7 +462,7 @@ StoryTree.prototype.getActionName = function(character, uid){
 	var that = this;
 
 	//check to see if we're still loading JSON
-	if(this.loadingSDB || this.loadingCharacters || this.loadingTree){
+	if(!this.isLoaded()){
 		var l = function(){that.getActionName(character, uid)};
 		console.log("Wait 500 ms for the JSONs to load....");
 		window.setTimeout(l, 500);
@@ -509,7 +509,7 @@ StoryTree.prototype.executeAction = function(character, uidPath){
 	var that = this;
 
 	//check to see if we're still loading JSON
-	if(this.loadingSDB || this.loadingCharacters || this.loadingTree){
+	if(!this.isLoaded()){
 		var l = function(){that.getActionName(character, uid)};
 		console.log("Wait 500 ms for the JSONs to load....");
 		window.setTimeout(l, 500);
@@ -548,7 +548,7 @@ StoryTree.prototype.executeAction = function(character, uidPath){
 			//Get the correct character for that expression
 			var char = that.characterDB.getCharacter(exp.characterName);
 
-			//Check if the characteristic exists for that character, 
+			//Check if the characteristic exists for that character,
 			//If not, we just use the default value for that character
 			if(char.characteristics[exp.cls] == undefined){
 				//Get sdbClass values for that characteristic
@@ -578,7 +578,7 @@ StoryTree.prototype.getCharacters = function(){
 
 	//check to see if we're still loading JSON
 	var that = this;
-	if(this.loadingSDB || this.loadingCharacters || this.loadingTree){
+	if(!this.isLoaded()){
 		var l = function(){that.getCharacters();};
 		console.log("Wait 500 ms for the JSONs to load....");
 		window.setTimeout(l, 500);
@@ -600,7 +600,7 @@ StoryTree.prototype.setCharacteristic = function(name, cls, type, value){
 
 	//check to see if we're still loading JSON
 	var that = this;
-	if(this.loadingSDB || this.loadingCharacters || this.loadingTree){
+	if(!this.isLoaded()){
 		var l = function(){that.setCharacteristic(name, cls, type, value);};
 		console.log("Wait 500 ms for the JSONs to load....");
 		window.setTimeout(l, 500);
@@ -686,7 +686,7 @@ StoryTree.prototype.getCharacteristics = function(character){
 
 	//check to see if we're still loading JSON
 	var that = this;
-	if(this.loadingSDB || this.loadingCharacters || this.loadingTree){
+	if(!this.isLoaded()){
 		var l = function(){that.getCharacteristics(character);};
 		console.log("Wait 500 ms for the JSONs to load....");
 		window.setTimeout(l, 500);
