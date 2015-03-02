@@ -715,4 +715,64 @@ StoryTree.prototype.getCharacteristics = function(character){
 
 	//Return that list
 	return chars;
-}
+};
+
+//StoryTree.getAllPaths(name)
+//This is more of a utility function for dialogue than a user facing one,
+//But this can still tell users a lot about how many actions could be taken
+//This function will retrieve a double list of all available action paths in a
+//tree for a given character
+//ARGUMENTS:
+//  name(string) - the name of the character
+//RETURN [[int]]
+StoryTree.prototype.getAllPaths = function(name){
+  var that = this;
+
+	//check to see if we're still loading JSON
+	if(!this.isLoaded()){
+		var l = function(){that.getAllPaths(name)};
+		console.log("Wait 500 ms for the JSONs to load....");
+		window.setTimeout(l, 500);
+		return;
+	}
+
+	//Grab the correct character and tree
+	var character = this.characterDB.getCharacter(name);
+	var tree = character.tree;
+
+	//This variable is the set of all sets of uids, will be returned
+	var doubleActionList = [];
+
+  //function for recursing through the tree
+  function traverse(uid, actionList){
+		//push uid onto the list
+		actionList.push(uid);
+
+		//Get the action Object
+		var action = tree.actions[uid];
+
+		//If the action is a leaf, attach current action list to doubleActionList,
+		//Then return
+		if(action.isLeaf()){
+			doubleActionList.push(actionList);
+			return;
+		}
+
+		//Loop through the action's children
+		for(var i = 0; i < action.children.length; i++){
+			var nextUID = action.children[i];
+
+			//Call traverse on the next child
+			traverse(nextUID, actionList);
+		}
+  }
+
+	//Call traversal for all first uids
+	for(var i = 0; i < tree.firsts.length; i++){
+		var first = tree.firsts[i];
+		traverse(first, []);
+	}
+
+	return doubleActionList;
+
+};

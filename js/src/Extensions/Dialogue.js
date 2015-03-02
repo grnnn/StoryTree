@@ -259,19 +259,68 @@ var MacroDB = function(){
 
 //MacroDB.addMacro(representation, replacement)
 //Adds a Macro to the macroDB
+//ARGUMENTS:
+//	representation(string) - the phrase we replace, can't contain spaces
+//	replacement(function) - how we replace it, must return a string
+//RETURN void
 MacroDB.prototype.addMacro = function(representation, replacement){
-	//TODO Implement function
+	this.macros[representation] = replacement;
 };
 
 //MacroDB.checkMacro(representation, replacement)
 //Checks the formatting of the macro to be added
+//ARGUMENTS:
+//	representation(string) - the phrase we replace, can't contain spaces
+//	replacement(function) - how we replace it, must return a string
+//RETURN void
 MacroDB.prototype.checkMacro = function(representation, replacement){
-	//TODO Implement function
+	//Track if we go bad somewhere
+	var isBad = false;
+	var errorString = "";
+
+	//check representation
+	if(typeof representation !== "string"){
+		isBad = true;
+		errorString += "Your macro representation is not a string. \n";
+	}
+
+	//check for spaces in representation
+	else if(representation.indexOf(" ") > -1 ){
+		isBad = true;
+		errorString += "Your macro representation contains a space character. \n";
+	}
+
+	//Check if representation returns a string
+	var replacementVal = replacement();
+	if(typeof replacementVal !== "string"){
+		isBad = true;
+		errorString += "Your replacement function does not initially return a string. \n";
+	}
+
+	if(isBad){
+		//Build our error info
+		errorString = "***Error: Improper Macro format.*** \n \n "
+			+ "You're receiving this because you improperly formatted one of your Macro objects. \n"
+			+ "The bad Macro: \n"
+			+ " -- representation: " + representation + " \n"
+			+ " -- replacement: " + replacement + " \n"
+			+ "Other error info: \n" + errorString;
+
+		//Throw our alert
+		alert(errorString);
+	}
+
+	return isBad;
 };
 
 //Add a macroDB object to our StoryTree instance
 //These are global and non-specific to each character
 StoryTree.prototype.macroDB = new MacroDB();
+
+//Add a variable to track who the last character we talked to was
+StoryTree.prototype.lastCharacter = "";
+//Add a variable for the player name
+StoryTree.prototype.playerName = "Player";
 
 //Add another loading field to StoryTree Main,
 //Since we're loading another database asyncronously, we need to track if it's being loaded as well
@@ -366,78 +415,46 @@ StoryTree.prototype.setDialogue = function(character, info){
 
 };
 
-//StoryTree.setMacro(info)
-//Function that loads macros into the MacroDB
-StoryTree.prototype.setMacro = function(info){
-	//TODO Implement function
-}
-
-//StoryTree.getAllPaths(name)
-//This is more of a utility function for dialogue than a user facing one,
-//But this can still tell users a lot about how many actions could be taken
-//This function will retrieve a double list of all available action paths in a
-//tree for a given character
+//StoryTree.setMacro(representation, replacement)
+//Function that load a macros into the MacroDB
+//It is bad practice to encode functions in JSON, so they have to be hand entered
 //ARGUMENTS:
-//  name(string) - the name of the character
-//RETURN [[int]]
-StoryTree.prototype.getAllPaths = function(name){
-  var that = this;
+//	representation(string) - what the macro is called
+//	replacement(function) - what do we replace it with
+//RETURN void
+StoryTree.prototype.setMacro = function(representation, replacement){
+	//If we've got bad formatting somewhere, simply return
+	if(this.badFormatting) return;
 
-	//check to see if we're still loading JSON
-	if(!this.isLoaded()){
-		var l = function(){that.getAllPaths(character)};
-		console.log("Wait 500 ms for the JSONs to load....");
-		window.setTimeout(l, 500);
+	//Error check the macro
+	if(this.macroDB.checkMacro(representation, replacement)){
+		this.badFormatting = true;
 		return;
 	}
 
-	//Grab the correct character and tree
-	var character = this.characterDB.getCharacter(name);
-	var tree = character.tree;
-
-	//This variable is the set of all sets of uids, will be returned
-	var doubleActionList = [];
-
-  //function for recursing through the tree
-  function traverse(uid, actionList){
-		//push uid onto the list
-		actionList.push(uid);
-
-		//Get the action Object
-		var action = tree.actions[uid];
-
-		//If the action is a leaf, attach current action list to doubleActionList,
-		//Then return
-		if(action.isLeaf()){
-			doubleActionList.push(actionList);
-			return;
-		}
-
-		//Loop through the action's children
-		for(var i = 0; i < action.children.length; i++){
-			var nextUID = action.children[i];
-
-			//Call traverse on the next child
-			traverse(nextUID, actionList);
-		}
-  }
-
-	//Call traversal for all first uids
-	for(var i = 0; i < tree.firsts.length; i++){
-		var first = tree.firsts[i];
-		traverse(first, []);
-	}
-
-	return doubleActionList;
-
-};
+	//Actually set the macro
+	this.macroDB.addMacro(representation, replacement);
+}
 
 //StoryTree.getDialogueOptions(name, numberOfOptions)
-//Returns all hintLines of available option paths
+//Returns all hintLines of available option paths, along with uid paths
 //ARGUMENTS:
 //	name(string) - name of character
 //	numberOfOptions(int) - number of options to return
-//RETURN [string]
+//RETURN [{hintLine: string, uidPath: string}]
 StoryTree.prototype.getDialogueOptions = function(name, numberOfOptions){
+
+	this.lastCharacter = name;
+
+	//TODO implement function
+};
+
+//StoryTree.executeDialogue(uidPath)
+//Exceutes that given line of dialogue
+//ARGUMENTS:
+//	uidPath(string or [int]) - path of uids to execute
+//RETURN void
+StoryTree.prototype.executeDialogue = function(uidPath){
+
 	//TODO implement function
 }
