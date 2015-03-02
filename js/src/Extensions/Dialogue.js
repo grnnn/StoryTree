@@ -444,17 +444,37 @@ StoryTree.prototype.setMacro = function(representation, replacement){
 //RETURN [{hintLine: string, uidPath: string}]
 StoryTree.prototype.getDialogueOptions = function(name, numberOfOptions){
 
+	//Set the last character talked to as the fed-in name
 	this.lastCharacter = name;
 
-	//TODO implement function
+	//Get our options, then map them to the proper hintLines
+	var options = this.getOptions(name, numberOfOptions);
+
+	//Get character and their dialogueDB
+	var character = this.characterDB[name];
+	var dialogueDB = character.dialogueDB;
+
+	//Build up our dialogue options list
+	var dialogueOptions = [];
+	for(var i = 0; i < options.length; i++){
+		var option = options[i];
+		dialogueOptions.push(
+			{
+				hintLine: dialogueDB.getDialogue[option].hintLine,
+				uidPath: DialogueDB.pathToString(option)
+			});
+	}
+
+	//Return that list
+	return dialogueOptions;
 };
 
 //StoryTree.executeDialogue(uidPath)
-//Exceutes that given line of dialogue
+//Exceutes that given line of dialogue, returns the set of lines for that dialogue
 //ARGUMENTS:
 //	uidPath(string or [int]) - path of uids to execute
-//RETURN void
+//RETURN [character(string), line(string)]
 StoryTree.prototype.executeDialogue = function(uidPath){
 
 	//TODO implement function
-}
+};
