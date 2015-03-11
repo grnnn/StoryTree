@@ -200,7 +200,7 @@ StoryTree.prototype.setCharacteristics = function(info){
 			if(that.badFormatting) return;
 
 			//Check if the class and type exist
-			that.badFormatting = that.SDB.exists(characteristic.class, characteristic.type);
+			that.badFormatting = !(that.SDB.contains(characteristic.class, characteristic.type));
 			if(that.badFormatting){
 				alert("setCharacteristics() Error: the class and type combo of \n "
 						+ "class: " + characteristic.class + "\n"
@@ -222,12 +222,6 @@ StoryTree.prototype.setCharacteristics = function(info){
 			//Manually set the value of that characteristic
 			character.parseExpression(characteristic.class, characteristic.type, "=", characteristic.value);
 		}
-
-		//First check the list of characters
-		that.badFormatting = that.characterDB.checkCharacters(jsonData);
-		if(that.badFormatting) return;
-
-
 
 		//Now we're done loading ;)
 		that.loadingCharacteristics = false;
@@ -266,6 +260,95 @@ StoryTree.prototype.setCharacteristics = function(info){
 //	info(String or {}) - the file path to the local json file representing the actionss or an object literal representing the actions
 //RETURN void
 StoryTree.prototype.setActions = function(character, info){
+	//Check for bad formatting first
+	if(this.badFormatting) return;
+
+	//For scoping when loading JSON
+	var that = this;
+
+	//First check to see if characters have been loaded
+	//We're loading JSON asynchronously, so it is a bit wonky with the timing
+	if(this.characterDB.isEmpty()){
+		var setT = function(){that.setActions(character, info);};
+		//reload function every 100 milliseconds
+		window.setTimeout(setT, 100);
+		return;
+	}
+
+	//Signal that we're loading Character values
+	this.loadingCharacteristics = true;
+
+	//This anonymous function will actually set the characters once they have been parsed
+	function setMyCharacteristics(jsonData){
+		//If the JSON data isn't in an array, put it in one
+		if(Object.prototype.toString.call( jsonData ) !== '[object Array]'){
+			jsonData = [jsonData];
+		}
+
+		//Loop through list of characteristics
+		for(var i = 0; i < jsonData.length; i++){
+			var characteristic = jsonData[i];
+
+			//now check formatting of characteristic
+			that.badFormatting = that.characterDB.checkCharacteristic(characteristic.name,
+																		characteristic.class,
+																		characteristic.type,
+																		characteristic.value);
+			if(that.badFormatting) return;
+
+			//Check if the class and type exist
+			that.badFormatting = !(that.SDB.contains(characteristic.class, characteristic.type));
+			if(that.badFormatting){
+				alert("setCharacteristics() Error: the class and type combo of \n "
+						+ "class: " + characteristic.class + "\n"
+						+ "type: " + characteristic.type + "\n"
+						+ "doesn't exist in the SDB.");
+				return;
+			}
+
+			//
+			//Now actually set the characteristic
+			//
+
+			//Get the correct sdbClass
+			var sdbClass = that.SDB.getClass(characteristic.class);
+
+			//Add the characteristic to the correct character
+			character.addCharacteristic(characteristic.class, characteristic.type, sdbClass.min, sdbClass.max, sdbClass.isBoolean, sdbClass.defaultVal);
+
+			//Manually set the value of that characteristic
+			character.parseExpression(characteristic.class, characteristic.type, "=", characteristic.value);
+		}
+
+		//Now we're done loading ;)
+		that.loadingCharacteristics = false;
+	}
+
+	//Now check for formatting of info
+	if(typeof info === "string"){
+		//If it's a string, we can assume JSON
+		var request = new XMLHttpRequest();
+		request.open('GET', info, true);
+		//Listener for parsing the JSON info
+		request.onload = function() {
+		  if (this.status >= 200 && this.status < 400) {
+				// Success!
+		    var data = JSON.parse(this.responseText);
+				setMyCharacteristics(data);
+			}
+		};
+		//Listener for error in parsing
+		request.onerror = function() {
+		  console.log("Unable to parse Characteristics from this path: " + info);
+		  that.loadingCharacteristics = false;
+		};
+		request.send();
+	}
+	//Else, we can assume literal, and just start parsing it as per usual
+	else {
+		setMyCharacteristics(info)
+	}
+
 
 	/*
 	//Check for bad formatting first

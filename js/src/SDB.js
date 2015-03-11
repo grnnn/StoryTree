@@ -83,7 +83,7 @@ SDB.prototype.isEmpty = function(){
 //	class(string) - SDB class name
 //	type(string) - SDB class-type name
 //RETURN bool
-SDB.prototype.exists = function(class, type){
+SDB.prototype.contains = function(class, type){
 	var sdbcls = this.SDBClasses[class];
 
 	if(sdbcls == undefined){
