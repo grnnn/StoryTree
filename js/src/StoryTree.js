@@ -13,6 +13,7 @@ var StoryTree = function(){
 
 	this.loadingSDB = false;
 	this.loadingCharacters = false;
+	this.loadingCharacteristics = false;
 	this.loadingTree = false;
 
 	this.badFormatting = false;
@@ -21,133 +22,252 @@ var StoryTree = function(){
 // StoryTree.setSDB(String path)
 // Set up the SDB of the StoryTree
 // ARGUMENTS:
-//	path(String) - the file path to the local json file representing the SDB
+//	info(string or {}) - the file path to the local json file representing some number of SDB value literals
 // RETURN void
-StoryTree.prototype.setSDB = function(path){
-
+StoryTree.prototype.setSDB = function(info){
 	//Check for bad formatting first
 	if(this.badFormatting) return;
 
-	//Start the XMLHttpRequest for the JSON file
+	//For scoping with anonymous functions
 	var that = this;
-	var request = new XMLHttpRequest();
-	request.open('GET', path, true);
 
+	//Signal that we're loading SDB values
 	this.loadingSDB = true;
 
-	request.onload = function() {
-	  if (request.status >= 200 && request.status < 400) {
-	    // Success!
-	    var data = JSON.parse(request.responseText);
+	//This anonymous function will actually set the SDB once it has been parsed
+	function setMySDB(jsonData){
+		//If the JSON data isn't in an array, put it in one
+		if(Object.prototype.toString.call( jsonData ) !== '[object Array]'){
+			jsonData = [jsonData];
+		}
 
-	    //Add each SDBClass into the SDB
-	    for(var i = 0; i < data.length; i++){
-	    	var sdbClass = data[i];
+		//iterate through SDBClasses
+		for(var i = 0; i < jsonData.length; i++){
+			var sdbClass = jsonData[i];
 
-	    	//Check the formatting of the JSON object to make sure that the typing is correct, simply abort if bad formatting
-	    	that.badFormatting = that.SDB.checkSDB(sdbClass.class, sdbClass.types, sdbClass.isBoolean, sdbClass.min, sdbClass.max, sdbClass.defaultVal);
-	    	if(that.badFormatting) return;
+			//Check the formatting of the JSON object to make sure that the typing is correct, simply abort if bad formatting
+			that.badFormatting = that.SDB.checkSDB(sdbClass.class, sdbClass.types, sdbClass.isBoolean, sdbClass.min, sdbClass.max, sdbClass.defaultVal);
+			if(that.badFormatting) return;
 
-	    	that.SDB.addClass(new SDBClass(sdbClass.class, sdbClass.types, sdbClass.isBoolean, sdbClass.min, sdbClass.max, sdbClass.defaultVal));
-	    }
+			//If the class already exists, simply add types to the class
+			if(that.SDB.getClass(sdbClass.class) != undefined){
+				that.SDB.getClass(sdbClass.class).addTypes(sdbClass.types);
+			}
+			//Else just add the class
+			else {
+				that.SDB.addClass(new SDBClass(sdbClass.class, sdbClass.types, sdbClass.isBoolean, sdbClass.min, sdbClass.max, sdbClass.defaultVal));
+			}
+		}
 
-	  }
-	  that.loadingSDB = false;
-	};
+		//Now we're done loading ;)
+		that.loadingSDB = false;
+	}
 
-	request.onerror = function() {
-	  alert("Unable to parse SDB from this path: " + path);
-	  that.loadingSDB = false;
-	};
-
-	request.send();
+	//Now check for formatting of info
+	if(typeof info === "string"){
+		//If it's a string, we can assume JSON
+		var request = new XMLHttpRequest();
+		request.open('GET', info, true);
+		//Listener for parsing the JSON info
+		request.onload = function() {
+		  if (this.status >= 200 && this.status < 400) {
+				// Success!
+		    var data = JSON.parse(this.responseText);
+				setMySDB(data);
+			}
+		};
+		//Listener for error in parsing
+		request.onerror = function() {
+		  console.log("Unable to parse SDB classes from this path: " + info);
+		  that.loadingSDB = false;
+		};
+		request.send();
+	}
+	//Else, we can assume literal, and just start parsing it as per usual
+	else {
+		setMySDB(info)
+	}
 };
 
-//StoryTree.setChracters(String path)
+//StoryTree.setChracters(info)
 //Set up the characters of the StoryTree
 //ARGUMENTS:
-//	path(String) - the file path to the local json file representing the characters and the characteristics
+//	info([{}] or String) - the file path to the local json file representing the characters or an object literal representing the characters
 //RETURN void
-StoryTree.prototype.setCharacters = function(path){
-
+StoryTree.prototype.setCharacters = function(info){
 	//Check for bad formatting first
 	if(this.badFormatting) return;
 
+	//For scoping when loading JSON
 	var that = this;
 
-	//First check to see if SDB has been loaded
+	//Signal that we're loading Character values
+	this.loadingCharacters = true;
+
+	//This anonymous function will actually set the characters once they have been parsed
+	function setMyCharacters(jsonData){
+		//If the JSON data isn't in an array, put it in one
+		if(Object.prototype.toString.call( jsonData ) !== '[object Array]'){
+			jsonData = [jsonData];
+		}
+
+		//First check the list of characters
+		that.badFormatting = that.characterDB.checkCharacters(jsonData);
+		if(that.badFormatting) return;
+
+		//Now add the characters to the DB
+		for(var i = 0; i < jsonData.length; i++){
+			//check if the character exists already
+			if(that.characterDB.getCharacter(jsonData[i]) != undefined){
+				console.log("setCharacter() warning: attempted to add a character that already exists.");
+			}
+			//Else add the character to the DB
+			else{
+				that.characterDB.addCharacter(jsonData[i]);
+			}
+		}
+
+		//Now we're done loading ;)
+		that.loadingCharacters = false;
+	}
+
+	//Now check for formatting of info
+	if(typeof info === "string"){
+		//If it's a string, we can assume JSON
+		var request = new XMLHttpRequest();
+		request.open('GET', info, true);
+		//Listener for parsing the JSON info
+		request.onload = function() {
+		  if (this.status >= 200 && this.status < 400) {
+				// Success!
+		    var data = JSON.parse(this.responseText);
+				setMyCharacters(data);
+			}
+		};
+		//Listener for error in parsing
+		request.onerror = function() {
+		  console.log("Unable to parse Characters from this path: " + info);
+		  that.loadingCharacters = false;
+		};
+		request.send();
+	}
+	//Else, we can assume literal, and just start parsing it as per usual
+	else {
+		setMyCharacters(info)
+	}
+};
+
+//StoryTree.setChracteristics(info)
+//Set up the characters of the StoryTree
+//ARGUMENTS:
+//	info([{}] or String) - the file path to the local json file representing the characteristics or an object literal representing the characteristics
+//RETURN void
+StoryTree.prototype.setCharacteristics = function(info){
+	//Check for bad formatting first
+	if(this.badFormatting) return;
+
+	//For scoping when loading JSON
+	var that = this;
+
+	//First check to see if SDB and characters have been loaded
 	//We're loading JSON asynchronously, so it is a bit wonky with the timing
-	if(this.SDB.isEmpty()){
-		var setT = function(){that.setCharacters(path);};
+	if(this.SDB.isEmpty() || this.characterDB.isEmpty()){
+		var setT = function(){that.setCharacteristics(info);};
 		//reload function every 100 milliseconds
 		window.setTimeout(setT, 100);
 		return;
 	}
 
-	//Start an XMLHttpRequest to load in a JSON
-	var request = new XMLHttpRequest();
-	request.open('GET', path, true);
+	//Signal that we're loading Character values
+	this.loadingCharacteristics = true;
 
-	this.loadingCharacters = true;
+	//This anonymous function will actually set the characters once they have been parsed
+	function setMyCharacteristics(jsonData){
+		//If the JSON data isn't in an array, put it in one
+		if(Object.prototype.toString.call( jsonData ) !== '[object Array]'){
+			jsonData = [jsonData];
+		}
 
-	request.onload = function() {
-	  if (request.status >= 200 && request.status < 400) {
-	    // Success!
-	    var data = JSON.parse(request.responseText);
+		//Loop through list of characteristics
+		for(var i = 0; i < jsonData.length; i++){
+			var characteristic = jsonData[i];
 
-	    that.badFormatting = that.characterDB.checkCharacters(data.characters);
-	    if(that.badFormatting) return;
+			//now check formatting of characteristic
+			that.badFormatting = that.characterDB.checkCharacteristic(characteristic.name,
+																		characteristic.class,
+																		characteristic.type,
+																		characteristic.value);
+			if(that.badFormatting) return;
 
-	    //Push new character objects into the game
-	    var chars = data.characters;
-	    for(var i = 0; i < chars.length; i++){
-	    	that.characterDB.addCharacter(chars[i]);
-	    }
-	    that.characterDB.addCharacter("World");
-	    that.characterDB.addCharacter("Player");
-
-	    //Loop through each characteristic
-	    var characteristics = data.characteristics;
-	    for(var j = 0; j < characteristics.length; j++){
-
-	    	//Check the formatting of the characteristic
-	    	that.badFormatting = that.characterDB.checkCharacteristic(characteristics[j].name,
-	    															  characteristics[j].class,
-	    															  characteristics[j].type,
-	    															  characteristics[j].value)
-
-	    	//Find the correct corresponding character for that characteristic
-	    	var character = that.characterDB.getCharacter(characteristics[j].name);
-	    	//Check if that sdbClass and type exists
-			var sdbClass = that.SDB.SDBClasses[characteristics[j].class	];
-			if(sdbClass.types[characteristics[j].type]){
-				//Now add the characteristic to the correct character
-				character.addCharacteristic(characteristics[j].class, characteristics[j].type, sdbClass.min, sdbClass.max, sdbClass.isBoolean, sdbClass.defaultVal);
-
-				//Manually set the value of that characteristic
-				character.parseExpression(characteristics[j].class, characteristics[j].type, "=", characteristics[j].value);
+			//Check if the class and type exist
+			that.badFormatting = that.SDB.exists(characteristic.class, characteristic.type);
+			if(that.badFormatting){
+				alert("setCharacteristics() Error: the class and type combo of \n "
+						+ "class: " + characteristic.class + "\n"
+						+ "type: " + characteristic.type + "\n"
+						+ "doesn't exist in the SDB.");
+				return;
 			}
-	    }
 
-	  }
-	  that.loadingCharacters = false;
-	};
+			//
+			//Now actually set the characteristic
+			//
 
-	request.onerror = function() {
-	  alert("Unable to parse characters from this path: " + path);
-	  that.loadingCharacters = false;
-	};
+			//Get the correct sdbClass
+			var sdbClass = that.SDB.getClass(characteristic.class);
 
-	request.send();
+			//Add the characteristic to the correct character
+			character.addCharacteristic(characteristic.class, characteristic.type, sdbClass.min, sdbClass.max, sdbClass.isBoolean, sdbClass.defaultVal);
+
+			//Manually set the value of that characteristic
+			character.parseExpression(characteristic.class, characteristic.type, "=", characteristic.value);
+		}
+
+		//First check the list of characters
+		that.badFormatting = that.characterDB.checkCharacters(jsonData);
+		if(that.badFormatting) return;
+
+
+
+		//Now we're done loading ;)
+		that.loadingCharacteristics = false;
+	}
+
+	//Now check for formatting of info
+	if(typeof info === "string"){
+		//If it's a string, we can assume JSON
+		var request = new XMLHttpRequest();
+		request.open('GET', info, true);
+		//Listener for parsing the JSON info
+		request.onload = function() {
+		  if (this.status >= 200 && this.status < 400) {
+				// Success!
+		    var data = JSON.parse(this.responseText);
+				setMyCharacteristics(data);
+			}
+		};
+		//Listener for error in parsing
+		request.onerror = function() {
+		  console.log("Unable to parse Characteristics from this path: " + info);
+		  that.loadingCharacteristics = false;
+		};
+		request.send();
+	}
+	//Else, we can assume literal, and just start parsing it as per usual
+	else {
+		setMyCharacteristics(info)
+	}
 };
 
-//StoryTree.setTrees(String path)
-//Set up the the actual Trees of the StoryTree
+//StoryTree.setActions(character, info)
+//Set up the the actual actions of the StoryTree
 //ARGUMENTS:
-//	path(String) - the file path to the local folder that holds all of the characters' Trees, these files have to be the same as the name of the character
+//	character(string) - the name of the character we're setting the actions to
+//	info(String or {}) - the file path to the local json file representing the actionss or an object literal representing the actions
 //RETURN void
-StoryTree.prototype.setTrees = function(path){
+StoryTree.prototype.setActions = function(character, info){
 
+	/*
 	//Check for bad formatting first
 	if(this.badFormatting) return;
 
@@ -269,6 +389,75 @@ StoryTree.prototype.setTrees = function(path){
 		};
 
 		request.send();
+	}*/
+};
+
+//StoryTree.setPreconditions(character, id, info)
+//Sets up preconditons, given a character and an action id
+//ARGUMENTS:
+//	character(string) - the name of the character we're setting this up for
+//	id(int) - the unique id of the action we're adding preconditions to
+//	info({} or path) - the file path to the local json file representing the preconditions or an object literal representing the preconditions
+//RETURN void
+StoryTree.prototype.setPreconditions = function(character, id, info){
+	//TODO implement function
+};
+
+//StoryTree.setExpressions(character, id, info)
+//Sets up expressions, given a character and an action id
+//ARGUMENTS:
+//	character(string) - the name of the character we're setting this up for
+//	id(int) - the unique id of the action we're adding expressions to
+//	info({} or path) - the file path to the local json file representing the expressions or an object literal representing the expressions
+//RETURN void
+StoryTree.prototype.setExpressions = function(character, id, info){
+	//TODO implement function
+};
+
+//StoryTree.set(thing, arg1, arg2, arg3, arg4)
+//Sets a storytree thing, based on the string of thing
+//ARGUMENTS:
+//	thing(string) - "SDB", "character", "characteristic", "action", "precondition", or "expression"
+//	arg1(?) - depends on child function being called
+//	arg2(?) - depends on child function being called
+//	arg3(?) - depends on child function being called
+//RETURN void
+StoryTree.prototype.set = function(thing, arg1, arg2, arg3){
+	//First check format of thing
+	if(typeof thing !== "string"){
+		alert("set() error: argument 1 is not of type string.");
+		return;
+	}
+
+	//lowercase thing
+	thing = thing.toLowerCase();
+
+	//If an 's' is at the end of the thing, concatenate it off. (function can take plural or singular things)
+	if(thing.slice(-1) === "s") thing = thing.substring(0, thing.length - 1);
+
+	//Now call the appropriate, already existing function
+	switch(thing){
+		case "sdb":
+			this.setSDB(arg1);
+			break;
+		case "character":
+			this.setCharacter(arg1);
+			break;
+		case "characteristic":
+			this.setCharacteristics(arg1);
+			break;
+		case "action":
+			//this.setActions(arg1, arg2);
+			break;
+		case "precondition":
+			//this.setPreconditions(arg1, arg2, arg3);
+			break;
+		case "expression":
+			//this.setExpressions(arg1, arg2, arg3);
+			break;
+		defualt:
+			alert("set() error: argument one is not a recognized type of addable information.");
+			break;
 	}
 };
 
@@ -496,7 +685,7 @@ StoryTree.prototype.getActionName = function(character, uid){
 //Just a simple function to tell if it's been loaded
 //RETURN bool - have the JSONs been loaded
 StoryTree.prototype.isLoaded = function(){
-	return !(this.loadingSDB || this.loadingTree || this.loadingCharacters);
+	return !(this.loadingSDB || this.loadingTree || this.loadingCharacters || this.loadingCharacteristics);
 }
 
 //StoryTree.executeAction()
@@ -587,96 +776,6 @@ StoryTree.prototype.getCharacters = function(){
 
 	return this.characterDB.getListOfCharacters();
 }
-
-//StoryTree.setCharacteristic()
-//Sets a characteristic for a character
-//ARGUMENTS:
-//	name(string) - name of character
-//	cls(string) - class of characteristic
-//	type(string) - type of characteristic
-//	value(int or bool) - value of characteristic
-//RETURN void
-StoryTree.prototype.setCharacteristic = function(name, cls, type, value){
-
-	//check to see if we're still loading JSON
-	var that = this;
-	if(!this.isLoaded()){
-		var l = function(){that.setCharacteristic(name, cls, type, value);};
-		console.log("Wait 500 ms for the JSONs to load....");
-		window.setTimeout(l, 500);
-		return;
-	}
-
-	//First error check all fields
-	var isBad = false;
-	var errorString = "";
-
-	//Check name type
-	if(typeof name !== "string"){
-		isBad = true;
-		errorString += "Your character name is not a string. \n";
-	}
-
-	//Check if cls is a string
-	if(typeof cls !== "string"){
-		isBad = true;
-		errorString += "Your class name is not a string. \n";
-	}
-
-	//Check if type is a string
-	if(typeof type !== "string"){
-		isBad = true;
-		errorString += "Your type name is not a string. \n";
-	}
-
-	//Check if value is an int or bool
-	if(typeof value !== "number" && typeof value !== "boolean"){
-		isBad = true;
-		errorString += "Your value is not an int or boolean. \n"
-	}
-
-	//Print out the error message if anything has gone bad
-	if(isBad){
-		alert("setCharacteristic() Error: \n"
-			+ " -- name: " + name + "\n"
-			+ " -- class: " + cls + "\n"
-			+ " -- type: " + type + "\n"
-			+ " -- value: " + value + "\n"
-			+ "Other error info: \n " + errorString);
-		return;
-	}
-
-	//Find out if the SDBClass is defined
-	var sdbcls = this.SDB.SDBClasses[cls];
-	if(sdbcls){
-		//Now find out if the type exists for that class
-		if(sdbcls[type]){
-
-			//Last, but not least, check if the character exists
-			if(this.characterDB.getCharacter[name]){
-				//Great, now we can finally set the characteristic
-
-				//Get the character
-				var character = this.characterDB.getCharacter(name);
-
-				//Now add the characteristic to the correct character
-				character.addCharacteristic(cls, type, sdbcls.min, sdbcls.max, sdbcls.isBoolean, sdbcls.defaultVal);
-
-				//Manually set the value of that characteristic
-				character.parseExpression(cls, type, "=", value);
-
-
-			} else {
-				alert("setCharacteristic() Error: The character does not exist.");
-			}
-		} else {
-			alert("setCharacteristic() Error: The type for the SDB Class does not exist.");
-		}
-	} else {
-		alert("setCharacteristic() Error: The SDB Class does not exist.");
-	}
-}
-
 
 //StoryTree.getCharacteristics()
 //ARGUMENTS:

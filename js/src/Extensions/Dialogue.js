@@ -368,7 +368,7 @@ StoryTree.prototype.setDialogue = function(character, info){
 	//function that will actually set the info once it's been parsed
 	function setMyDialogue(jsonData){
 		//If the json data isn't in an array, put it in an array
-		if(Object.prototype.toString.call( jsonData ) === '[object Array]'){
+		if(Object.prototype.toString.call( jsonData ) !== '[object Array]'){
 			jsonData = [jsonData];
 		}
 
@@ -405,9 +405,9 @@ StoryTree.prototype.setDialogue = function(character, info){
 
 		request.onerror = function() {
 		  console.log("Unable to parse " + character + "'s Dialogue from this path: " + info);
-		  that.loadingTree = false;
+		  that.loadingDialogue = false;
 		};
-
+		request.send();
 	} else {
 		//Else, we can assume that we've been hand-fed the info, since we have error checking somewhere else
 		setMyDialogue(info);

@@ -1,5 +1,5 @@
 /*
-* SDBClass, represents a category of social space that can be used 
+* SDBClass, represents a category of social space that can be used
 *	name(String): the name of the category Class
 *	types({String}): Lookup Table of the subcategory names
 *	isBoolean(bool): is the category expressed as a boolean or a number
@@ -20,8 +20,21 @@ var SDBClass = function(name, types, isBoolean, min, max, defaultVal){
 		this.min = min;
 		this.max = max;
 	}
-	this.defaultVal = defaultVal; 
+	this.defaultVal = defaultVal;
 };
+
+//SDBClass.addTypes(types)
+//Adds types to the SDBClass
+//ARGUMENTS:
+//	types([string]) - array of types to be added
+//RETURN void
+SDBClass.prototype.addTypes = function(types){
+	for(var i = 0; i < types.length; i++){
+		var type = types[i];
+
+		this.types[type] = true;
+	}
+}
 
 /*
 * SDB stands for "Story Database", contains a set of SDBClasses
@@ -36,11 +49,20 @@ var SDB = function(){
 //SDB.addClass(SDBClass cls)
 //Adds the SDBClass into the SDB
 //	ARGUMENTS:
-//		cls(SDBCLass) - the class being added to SDB 
+//		cls(SDBCLass) - the class being added to SDB
 //	RETURN: void
 SDB.prototype.addClass = function(cls){
 	//SDBClass is added in a Lookup table for easy type lookup
 	this.SDBClasses[cls.name] = cls;
+}
+
+//SDB.getClass(cls)
+//Returns the SDBClass to the user
+//ARGUMENTS:
+//	cls(string) - the name of the class
+//Return SDBCLass
+SDB.prototype.getClass = function(cls){
+	return this.SDBClasses[cls];
 }
 
 //SDB.isEmpty()
@@ -54,6 +76,27 @@ SDB.prototype.isEmpty = function(){
 	}
 	return (counter === 0);
 }
+
+//SDB.exists(class, type)
+//Checks if the class and type exist in the SDB
+//ARGUMENTS:
+//	class(string) - SDB class name
+//	type(string) - SDB class-type name
+//RETURN bool
+SDB.prototype.exists = function(class, type){
+	var sdbcls = this.SDBClasses[class];
+
+	if(sdbcls == undefined){
+		return false;
+	}
+
+	var clstype = sdbClass.types[type];
+	if(clstype == undefined){
+		return false;
+	}
+
+	return true;
+};
 
 //SDB.checkSDB(sdbClass.class, sdbClass.types, sdbClass.isBoolean, sdbClass.min, sdbClass.max, sdbClass.defaultVal)
 //Check the formatting a single SDBClass set of fields.
@@ -72,7 +115,7 @@ SDB.prototype.checkSDB = function(cls, types, isBoolean, min, max, defaultVal){
 	var isBad = false;
 	var errorString = "";
 
-	//Also, since types are an array we have to build into a string, 
+	//Also, since types are an array we have to build into a string,
 	//we need to track spefically how we want to error track types
 	var typesBad = false;
 
@@ -154,7 +197,7 @@ SDB.prototype.checkSDB = function(cls, types, isBoolean, min, max, defaultVal){
 	}
 
 	//if something is wrong with the formatting, we print a giant error alert for the user
-	if(isBad){ 
+	if(isBad){
 
 		// Since printing an array of stings will return [Object Array], I want to build up the type array as a string representation
 		// If it's not an array, just rely on the simple default toString
@@ -168,11 +211,11 @@ SDB.prototype.checkSDB = function(cls, types, isBoolean, min, max, defaultVal){
 		} else {
 			typeArray = types;
 		}
-		
+
 		//Alert the user of all of the bad formatting
 		alert("***Error: Improper SDB format.*** \n \n "
 			+ "You're receiving this because you improperly formatted one of your SDB Class objects in your SDB JSON file. \n"
-			+ "The bad SDB Class: \n" 
+			+ "The bad SDB Class: \n"
 			+ " -- class: " + cls + " \n"
 			+ " -- types: " + typeArray + " \n"
 			+ " -- isBoolean: " + isBoolean + " \n"
