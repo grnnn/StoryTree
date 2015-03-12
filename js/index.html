@@ -24,7 +24,8 @@
 		var storyTree = new StoryTree();
 		storyTree.setSDB("res/SDB.json");
 		storyTree.setCharacters("res/characters.json");
-		storyTree.setTrees("res/StoryTrees/");
+		storyTree.setCharacteristics("res/characteristics.json");
+		storyTree.setActions("Trish", "res/StoryTrees/Trish.json");
 
 		document.getElementById("trishActions").addEventListener("click", function(){
 			if(storyTree.isLoaded()){

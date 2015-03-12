@@ -1,5 +1,5 @@
 /* Precondition class, used to decide if an action can be performed
-*	
+*
 *	character(string) - name of the character to evaluate
 *	cls(string) - the SDBClass to evaluate
 *	type(string) - the type to evaluate
@@ -62,7 +62,7 @@ Precondition.prototype.checkPrecondition = function(character, cls, type, operat
 	if(isBad){
 		errorString = "***Error: Improper Precondition format.*** \n \n "
 			+ "You're receiving this because you improperly formatted one of your Precondition objects. \n"
-			+ "The bad Precondition: \n" 
+			+ "The bad Precondition: \n"
 			+ " -- character: " + character + " \n"
 			+ " -- class: " + cls + " \n"
 			+ " -- type: " + type + " \n"
@@ -77,7 +77,7 @@ Precondition.prototype.checkPrecondition = function(character, cls, type, operat
 }
 
 /* Expression class, used to change characteristics
-*	
+*
 *	character(string) - name of the character to evaluate
 *	cls(string) - the SDBClass to evaluate
 *	type(string) - the type to evaluate
@@ -140,7 +140,7 @@ Expression.prototype.checkExpression = function(character, cls, type, operation,
 	if(isBad){
 		errorString = "***Error: Improper Expression format.*** \n \n "
 			+ "You're receiving this because you improperly formatted one of your Expression objects. \n"
-			+ "The bad Expression: \n" 
+			+ "The bad Expression: \n"
 			+ " -- character: " + character + " \n"
 			+ " -- class: " + cls + " \n"
 			+ " -- type: " + type + " \n"
@@ -155,8 +155,8 @@ Expression.prototype.checkExpression = function(character, cls, type, operation,
 }
 
 /* Action class, an action that can be executed by interacting with a character
-*Can only be executed when preconditions are met, and then expressions are evaluated when action is executed 
-*	
+*Can only be executed when preconditions are met, and then expressions are evaluated when action is executed
+*
 *	name(string) - name of the action to take, can be anything
 *	uid(int) - unique id for every action for ease of access
 *	preconditions([Precondition]) - array of preconditions to access action
@@ -175,7 +175,7 @@ var Action = function(name, uid){
 	this.children = [];
 	this.parents = [];
 
-	this.cls = ""; 
+	this.cls = "";
 }
 
 //Adds a precondtion to the action
@@ -216,7 +216,7 @@ Action.prototype.isFirst = function(){
 //Check the formatting and usage of the action being made
 //ARGUMENTS:
 //	name(string or undefined) - the name of the action
-//	uid(int) - the unique id of the action 
+//	uid(int) - the unique id of the action
 //	first(bool or undefined) - is the action the first?
 //	cls(string or undefined) - the category of the action
 //	preconditions([{}]) - List of Precondition objects to be evaluated
@@ -332,7 +332,7 @@ Action.prototype.checkAction = function(name, uid, first, cls, preconditions, ex
 
 /* STree class
 *
-*	firsts([int]) - array of action uids that are at the top of the tree 
+*	firsts([int]) - array of action uids that are at the top of the tree
 *	actions([int]) - Lookup table of uids mapped to actions
 *
 */
@@ -349,7 +349,7 @@ STree.prototype.addFirst = function(uid){
 //map an action to a uid, check if that uid has been defined
 STree.prototype.mapAction = function(name, uid){
 	if(this.actions[uid] !== undefined){
-		alert("Error: the uid " + uid + " has already been added");
+		console.log("Warning: the uid " + uid + " has already been added");
 	}
 	this.actions[uid] = new Action(name, uid);
 }
@@ -399,7 +399,7 @@ STree.prototype.checkActionTree = function(){
 		//Set an auto isBad to false
 		var isBad = false;
 
-		//Loop through the action's children 
+		//Loop through the action's children
 		var actionObj = that.actions[uid];
 		for(var i = 0; i < actionObj.children.length; i++){
 			var child = actionObj.children[i];
@@ -410,7 +410,7 @@ STree.prototype.checkActionTree = function(){
 				//We also start returning the isBad bool up the traversal
 				if(child === currentActionList[j]){
 					goneBad(currentActionList);
-					return true;					
+					return true;
 				}
 			}
 

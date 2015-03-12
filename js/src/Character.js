@@ -16,7 +16,7 @@ var Characteristic = function(cls, type, min, max, isBoolean, defaultVal){
 	if(!isBoolean){
 		this.min = min;
 		this.max = max;
-	} 
+	}
 }
 
 //Characteristic.parseExpression(String operation, int(or bool) value)
@@ -78,8 +78,8 @@ Characteristic.prototype.setVal = function(val){
 *	name(String) - Unique name of the character
 *	characteristics([Characteristics]) - Double Lookup table containing the set of proper characteristics, Lookuping class and type
 *	tree(STree) - Actual STree for that character
-*	
-*/  
+*
+*/
 var Character = function(name){
 	this.name = name;
 
@@ -117,7 +117,7 @@ Character.prototype.setCharacteristic = function(characteristic){
 Character.prototype.parseExpression = function(cls, type, operation, value){
 	if(this.characteristics[cls][type] !== undefined) {
 		this.characteristics[cls][type].parseExpression(operation, value);
-	} 
+	}
 }
 
 //Character.setStoryTree(tree)
@@ -150,14 +150,13 @@ CharacterDB.prototype.addCharacter = function(name){
 //ARGUMENTS:
 //	name(string) - The name of the character you want to find
 CharacterDB.prototype.getCharacter = function(name){
-	if(this.characters[name] == undefined) alert("CharacterDB.getCharacter() Error: There's no character with the name " + name);
 	return this.characters[name];
 }
 
 //CharacterDB.isEmpty()
 //Is the database empty?
 //	ARGUMENTS:
-//	RETURN bool 
+//	RETURN bool
 CharacterDB.prototype.isEmpty = function(){
 	var counter = 0;
 	for(var char in this.characters){
@@ -215,7 +214,7 @@ CharacterDB.prototype.checkCharacters = function(chars){
 		//Alert the user of all of the bad formatting
 		alert("***Error: Improper Character format.*** \n \n "
 			+ "You're receiving this because you improperly formatted your list of characters in your character file. \n"
-			+ "Your characters: \n" 
+			+ "Your characters: \n"
 			+ charArray + " \n\n"
 			+ "Other error info: \n" + errorString);
 	}
@@ -266,7 +265,7 @@ CharacterDB.prototype.checkCharacteristic = function(name, cls, type, val){
 		//Alert the user of all of the bad formatting
 		alert("***Error: Improper Characteristic format.*** \n \n "
 			+ "You're receiving this because you improperly formatted one of your Characteristic objects in your Character JSON file. \n"
-			+ "The bad Characteristic: \n" 
+			+ "The bad Characteristic: \n"
 			+ " -- name: " + name + " \n"
 			+ " -- class: " + cls + " \n"
 			+ " -- type: " + type + " \n"

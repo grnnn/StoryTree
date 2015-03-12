@@ -330,7 +330,7 @@ StoryTree.prototype.loadingDialogue = false;
 //Overwrite of base isLoaded() function, accounting for dialogue too
 //RETURN bool - have the JSONs been loaded
 StoryTree.prototype.isLoaded = function(){
-	return !(this.loadingSDB || this.loadingTree || this.loadingCharacters || this.loadingDialogue);
+	return !(this.loadingSDB || this.loadingActions || this.loadingCharacters || this.loadingCharacteristics || this.loadingDialogue);
 };
 
 //StoryTree.setDialogue(character, info)

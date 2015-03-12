@@ -14,7 +14,7 @@ var StoryTree = function(){
 	this.loadingSDB = false;
 	this.loadingCharacters = false;
 	this.loadingCharacteristics = false;
-	this.loadingTree = false;
+	this.loadingActions = false;
 
 	this.badFormatting = false;
 };
@@ -124,6 +124,8 @@ StoryTree.prototype.setCharacters = function(info){
 			//Else add the character to the DB
 			else{
 				that.characterDB.addCharacter(jsonData[i]);
+				//Also, set up an stree object
+				that.characterDB.getCharacter(jsonData[i]).setStoryTree(new STree());
 			}
 		}
 
@@ -200,7 +202,7 @@ StoryTree.prototype.setCharacteristics = function(info){
 			if(that.badFormatting) return;
 
 			//Check if the class and type exist
-			that.badFormatting = !(that.SDB.contains(characteristic.class, characteristic.type));
+			that.badFormatting = !(that.SDB.doesContain(characteristic.class, characteristic.type));
 			if(that.badFormatting){
 				alert("setCharacteristics() Error: the class and type combo of \n "
 						+ "class: " + characteristic.class + "\n"
@@ -208,6 +210,13 @@ StoryTree.prototype.setCharacteristics = function(info){
 						+ "doesn't exist in the SDB.");
 				return;
 			}
+
+			//Check if the character exists
+			if(that.characterDB.getCharacter(characteristic.name) == undefined){
+				alert("setCharacteristics() error: There's no character named " + characteristic.name);
+				return
+			}
+			var character = that.characterDB.getCharacter(characteristic.name);
 
 			//
 			//Now actually set the characteristic
@@ -275,53 +284,74 @@ StoryTree.prototype.setActions = function(character, info){
 		return;
 	}
 
-	//Signal that we're loading Character values
-	this.loadingCharacteristics = true;
+	//Signal that we're loading Action values
+	this.loadingActions = true;
 
 	//This anonymous function will actually set the characters once they have been parsed
-	function setMyCharacteristics(jsonData){
+	function setMyActions(jsonData){
 		//If the JSON data isn't in an array, put it in one
 		if(Object.prototype.toString.call( jsonData ) !== '[object Array]'){
 			jsonData = [jsonData];
 		}
 
-		//Loop through list of characteristics
-		for(var i = 0; i < jsonData.length; i++){
-			var characteristic = jsonData[i];
-
-			//now check formatting of characteristic
-			that.badFormatting = that.characterDB.checkCharacteristic(characteristic.name,
-																		characteristic.class,
-																		characteristic.type,
-																		characteristic.value);
-			if(that.badFormatting) return;
-
-			//Check if the class and type exist
-			that.badFormatting = !(that.SDB.contains(characteristic.class, characteristic.type));
-			if(that.badFormatting){
-				alert("setCharacteristics() Error: the class and type combo of \n "
-						+ "class: " + characteristic.class + "\n"
-						+ "type: " + characteristic.type + "\n"
-						+ "doesn't exist in the SDB.");
-				return;
-			}
-
-			//
-			//Now actually set the characteristic
-			//
-
-			//Get the correct sdbClass
-			var sdbClass = that.SDB.getClass(characteristic.class);
-
-			//Add the characteristic to the correct character
-			character.addCharacteristic(characteristic.class, characteristic.type, sdbClass.min, sdbClass.max, sdbClass.isBoolean, sdbClass.defaultVal);
-
-			//Manually set the value of that characteristic
-			character.parseExpression(characteristic.class, characteristic.type, "=", characteristic.value);
+		//First retrieve the character we need, abort if it doesn't exist
+		var char = that.characterDB.getCharacter(character);
+		if(char == undefined){
+			alert("setActions() error: the character " + character + " does not exist.");
+			return;
 		}
 
-		//Now we're done loading ;)
-		that.loadingCharacteristics = false;
+		var tree = char.tree;
+
+		//Now loop through each action
+		for(var i = 0; i < jsonData.length; i++){
+			var action = jsonData[i];
+
+			//Check the formatting of the action before anything else
+			that.badFormatting = Action.prototype.checkAction(action.name, action.uid, action.first, action.class, action.preconditions, action.expressions);
+			if(that.badFormatting) return;
+
+			//If the action is labeled as a first, set it to be a first
+			if(action.first){
+				tree.addFirst(action.uid);
+			}
+
+			//Give the Speak Tree a Lookup reference to that action
+			var uid = action.uid;
+			tree.mapAction(action.name, uid);
+
+			//Now get that action object that the Speak Tree created
+			var actionObj = tree.actions[uid];
+
+			//Loop through each precondition and set it to the action object
+			for(var d = 0; d < action.preconditions.length; d++){
+				var pre = action.preconditions[d];
+				actionObj.addPrecondition(pre.character, pre.class, pre.type, pre.operation, pre.value);
+			}
+
+			//Loop through each expression and set it to the action object
+			if(action.expressions !== undefined) {
+				for(var e = 0; e < action.expressions.length; e++){
+					var exp = action.expressions[e];
+					actionObj.addExpression(exp.character, exp.class, exp.type, exp.operation, exp.value);
+				}
+			}
+
+			//Loop through each child uid and set it to the action object
+			if(action.leadsTo !== undefined) {
+				for(var f = 0; f < action.leadsTo.length; f++){
+					var child = action.leadsTo[f];
+					actionObj.addChild(child);
+				}
+			}
+
+			//Finally, set that action's class
+			actionObj.setClass(action.class);
+
+		}
+
+		//Now we're done loading actions ;)
+		that.loadingActions = false;
 	}
 
 	//Now check for formatting of info
@@ -334,145 +364,20 @@ StoryTree.prototype.setActions = function(character, info){
 		  if (this.status >= 200 && this.status < 400) {
 				// Success!
 		    var data = JSON.parse(this.responseText);
-				setMyCharacteristics(data);
+				setMyActions(data);
 			}
 		};
 		//Listener for error in parsing
 		request.onerror = function() {
-		  console.log("Unable to parse Characteristics from this path: " + info);
-		  that.loadingCharacteristics = false;
+		  console.log("Unable to parse Actions from this path: " + info);
+		  that.loadingActions = false;
 		};
 		request.send();
 	}
 	//Else, we can assume literal, and just start parsing it as per usual
 	else {
-		setMyCharacteristics(info)
+		setMyActions(info)
 	}
-
-
-	/*
-	//Check for bad formatting first
-	if(this.badFormatting) return;
-
-	var that = this;
-
-	this.loadingTree = true;
-
-	//First check to see if characters have been loaded
-	//We're loading JSON asynchronously, so it is a bit wonky with the timing
-	if(this.characterDB.isEmpty()){
-		var setT = function(){that.setTrees(path);};
-		//reload function every 100 milliseconds
-		window.setTimeout(setT, 100);
-		return;
-	}
-
-	//Do a check for bad formatting in the path
-	if(path.substr(path.length - 1) !== "/"){
-		alert("StoryTree.setTrees() error: pathname to folder needs to end with a /");
-		return;
-	}
-
-	//First, get a reference to all characters
-	var characters = this.characterDB.getListOfCharacters();
-
-
-	//Loop through each character, adding their corresponding speak tree to the path name
-	for(var b = 0; b < characters.length; b++){
-		var myChar = that.characterDB.getCharacter(characters[b]);
-		var newPath = path + myChar.name + ".json";
-
-		var request = new XMLHttpRequest();
-		request.c = myChar.name;
-		request.p = newPath;
-		request.open('GET', request.p, true);
-
-		request.onload = function() {
-		  if (this.status >= 200 && this.status < 400) {
-		    // Success!
-		    var data = JSON.parse(this.responseText);
-
-		    //Code once data has been parsed
-
-		    //get proper character
-		    var char = that.characterDB.getCharacter(this.c);
-
-		    //Create Speak tree and set it to the character
-		    var sTree = new STree();
-		    char.setStoryTree(sTree);
-
-		    //Loop through each action
-		    for(var c = 0; c < data.length; c++){
-
-		    	var action = data[c];
-
-		    	//Check the formatting of the action before anything else
-		    	that.badFormatting = Action.prototype.checkAction(action.name, action.uid, action.first, action.class, action.preconditions, action.expressions);
-	    		if(that.badFormatting) return;
-
-		    	//If the action is labeled as a first, set it to be a first
-		    	if(action.first){
-		    		sTree.addFirst(action.uid);
-		    	}
-
-		    	//Give the Speak Tree a Lookup reference to that action
-		    	var uid = action.uid;
-		    	sTree.mapAction(action.name, uid);
-
-		    	//Now get that action object that the Speak Tree created
-		    	var actionObj = sTree.actions[uid];
-
-		    	//Loop through each precondition and set it to the action object
-		    	for(var d = 0; d < action.preconditions.length; d++){
-		    		var pre = action.preconditions[d];
-		    		actionObj.addPrecondition(pre.character, pre.class, pre.type, pre.operation, pre.value);
-		    	}
-
-		    	//Loop through each expression and set it to the action object
-		    	if(action.expressions !== undefined) {
-		    		for(var e = 0; e < action.expressions.length; e++){
-		    			var exp = action.expressions[e];
-		    			actionObj.addExpression(exp.character, exp.class, exp.type, exp.operation, exp.value);
-		    		}
-		    	}
-
-		    	//Loop through each child uid and set it to the action object
-		    	if(action.leadsTo !== undefined) {
-			    	for(var f = 0; f < action.leadsTo.length; f++){
-			    		var child = action.leadsTo[f];
-			    		actionObj.addChild(child);
-			    	}
-			    }
-
-		    }
-
-		    //Now check the sTree for any loops
-		    that.badFormatting = sTree.checkActionTree();
-	    	if(that.badFormatting) return;
-
-		    //Go through each action again to set the classes
-		    for(var d = 0; d < data.length; d++){
-		    	var action = data[d];
-
-		    	//Set the action's class if it exists
-		    	if(action.class !== undefined){
-		    		sTree.setClasses(action.uid, action.class);
-		    	}
-		    }
-
-
-
-		  }
-		  that.loadingTree = false;
-		};
-
-		request.onerror = function() {
-		  console.log("Unable to parse character Speak Tree from this path: " + newPath);
-		  that.loadingTree = false;
-		};
-
-		request.send();
-	}*/
 };
 
 //StoryTree.setPreconditions(character, id, info)
@@ -768,7 +673,7 @@ StoryTree.prototype.getActionName = function(character, uid){
 //Just a simple function to tell if it's been loaded
 //RETURN bool - have the JSONs been loaded
 StoryTree.prototype.isLoaded = function(){
-	return !(this.loadingSDB || this.loadingTree || this.loadingCharacters || this.loadingCharacteristics);
+	return !(this.loadingSDB || this.loadingActions || this.loadingCharacters || this.loadingCharacteristics);
 }
 
 //StoryTree.executeAction()

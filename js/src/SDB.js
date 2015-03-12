@@ -77,20 +77,20 @@ SDB.prototype.isEmpty = function(){
 	return (counter === 0);
 }
 
-//SDB.exists(class, type)
+//SDB.doesContain(class, type)
 //Checks if the class and type exist in the SDB
 //ARGUMENTS:
 //	class(string) - SDB class name
 //	type(string) - SDB class-type name
 //RETURN bool
-SDB.prototype.contains = function(class, type){
-	var sdbcls = this.SDBClasses[class];
+SDB.prototype.doesContain = function(cls, type){
+	var sdbcls = this.SDBClasses[cls];
 
 	if(sdbcls == undefined){
 		return false;
 	}
 
-	var clstype = sdbClass.types[type];
+	var clstype = sdbcls.types[type];
 	if(clstype == undefined){
 		return false;
 	}
