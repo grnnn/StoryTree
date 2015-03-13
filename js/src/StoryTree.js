@@ -525,6 +525,30 @@ StoryTree.prototype.getOptions = function(character, numOfOptions){
 	//	uid(int) - the uid of the action to be traversed
 	//return void
 	function traverse(uid){
+		//Get action object
+		var actionObj = tree.actions[uid];
+
+		//evaluate each precondition for the action object
+		var trig = false;
+		for(var j = 0; j < actionObj.preconditions.length; j++){
+			var pre = actionObj.preconditions[j];
+
+			//check to see if we get a false value
+			if(!evaluatePrecondition(pre)){
+				trig = true;
+				break;
+			}
+		}
+
+		//If something doesn't pass, we return
+		if(trig) return;
+
+		//We can assume now that we've succesfully passed the preconditions
+		//This means we can add the action to the uid list
+		uidList.push(actionUID);
+
+
+		/*
 
 		//Before anything, see if the counter for max returns is at 0
 		//If so, we immediately bypass the tree traversal
@@ -577,6 +601,7 @@ StoryTree.prototype.getOptions = function(character, numOfOptions){
 
 
 		}
+		*/
 	}
 
 	//loop through each top action, traversing through their corresponding trees
