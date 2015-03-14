@@ -71,7 +71,35 @@ Characteristic.prototype.setVal = function(val){
 	this.value = val;
 }
 
+/*Memory class, contains a plethora of info pertaining to an action path taken by a player
+*
+* memoryVec(map<string, float>) - maps a distinct class:type string to the amount of change done in that expression(0-1)
+* actionPath(string) - set of actions taken in string notation (separated by :)
+*/
+var Memory = function(){
+	this.memVec = {};
+	this.actionPath = "";
+}
 
+//Memory.encodeActions(actions)
+//Sets a set of actions into the actionPath string
+//ARGUMENTS:
+//	actions([int]) - set of actions to be encoded
+//RETURN void
+Memory.prototype.encodeActions = function(actions){
+
+}
+
+/*MemoryBank class, contains a list of Memories that is used as a heuristic for a getOptions search
+*
+*	memories([Memory]) - a list of memories that is used to compare against possible outcomes
+* timeStep(int) - Records now many times the player has interacted with this character
+*/
+var MemoryBank = function(){
+	this.memories = [];
+
+	this.timeStep = 0;
+}
 
 /*Character class, a character is an enitity that can have characteristics and a Speak Tree
 *
@@ -82,6 +110,8 @@ Characteristic.prototype.setVal = function(val){
 */
 var Character = function(name){
 	this.name = name;
+
+	this.memBank = new MemoryBank();
 
 	this.characteristics = {};
 	this.tree = {};

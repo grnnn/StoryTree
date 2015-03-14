@@ -525,6 +525,9 @@ StoryTree.prototype.getOptions = function(character, numOfOptions){
 	//	uid(int) - the uid of the action to be traversed
 	//return void
 	function traverse(uid){
+
+		//console.log(uid);
+
 		//Get action object
 		var actionObj = tree.actions[uid];
 
@@ -545,107 +548,32 @@ StoryTree.prototype.getOptions = function(character, numOfOptions){
 
 		//We can assume now that we've succesfully passed the preconditions
 		//This means we can add the action to the uid list
-		uidList.push(actionUID);
+		uidList.push(uid);
 
-
-		/*
-
-		//Before anything, see if the counter for max returns is at 0
-		//If so, we immediately bypass the tree traversal
-		if(counter === 0){
+		//If the action is a leaf, simply return
+		if(actionObj.isLeaf()){
+			uids.push(uidList);
+			uidList = [];
 			return;
 		}
 
-		// get the action object and loop through each of its children
-		var action = tree.actions[uid];
-		for(var i = 0; i < action.children.length; i++){
-			var actionUID = action.children[i];
-			var actionObj = tree.actions[actionUID];
+		//Now we run the traversal algorithm for each child action
+		for(var i = 0; i < actionObj.children.length; i++){
+			var actionUID = actionObj.children[i];
+			var action = tree.actions[actionUID];
 
-			//evaluate each precondition for the child object
-			var trig = false;
-			for(var j = 0; j < actionObj.preconditions.length; j++){
-				var pre = actionObj.preconditions[j];
-
-				//check to see if we get a false value
-				if(!evaluatePrecondition(pre)){
-					trig = true;
-					break;
-				}
-			}
-			//If we do get a false value, move on in the loop
-			if(trig) continue;
-
-			//Now check if the class has been added to the list in the past
-			//If so, disregard this whole branch in our traversal
-			for(var k = 0; k < classes.length; k++){
-				if(classes[k] === actionObj.cls) continue;
-			}
-
-			//We can assume now that we've succesfully passed the preconditions
-			//This means we can add the action to the uid list
-			uidList.push(actionUID);
-
-			//If it's a leaf, we push it onto the return list and decrement the counter for max returns
-			//If not a leaf, we keep traversing
-			if(actionObj.isLeaf()){
-				uids.push(uidList);
-				uidList = [];
-				if(actionObj.cls !== ""){
-					classes.push(actionObj.cls);
-				}
-				counter--;
-			} else {
-				traverse(actionUID);
-			}
-
-
+			traverse(actionUID);
 		}
-		*/
 	}
 
 	//loop through each top action, traversing through their corresponding trees
 	//keep track of which actions we've added and how many were added
 	var uids = [];
 	var uidList = [];
-	var counter = numOfOptions;
-	var classes = [];
-	for(var j = 0; j < tree.firsts.length; j++){
+	for(var a = 0; a < tree.firsts.length; a++){
+		var actionUID = tree.firsts[a];
 
-
-		var actionUID = tree.firsts[j];
-		var actionObj = tree.actions[actionUID];
-
-		//evaluate each precondition for the child object
-		var trig = false;
-		for(var k = 0; k < actionObj.preconditions.length; k++){
-			var pre = actionObj.preconditions[k];
-
-			//check to see if we get a false value
-			if(!evaluatePrecondition(pre)){
-				trig = true;
-				break;
-			}
-		}
-		//If we do get a false value, move on in the loop
-		if(trig) {
-			continue;
-		}
-
-		//We can assume now that we've succesfully passed the preconditions
-		//If it's a leaf, we push it onto the return list and decrement the counter for max returns
-		//If not a leaf, we keep traversing
-		if(actionObj.isLeaf()){
-			uids.push([actionUID]);
-			if(actionObj.cls !== ""){
-				classes.push(actionObj.cls);
-			}
-			counter--;
-		} else {
-			uidList.push(actionUID);
-			traverse(actionUID);
-		}
-
+		traverse(actionUID);
 	}
 
 	//return the list of uids for doable actions
