@@ -656,6 +656,11 @@ StoryTree.prototype.executeAction = function(character, uidPath){
 		return;
 	}
 
+	//Create a memory object to be added to the character's memBank
+	var memory = new Memory();
+	//set the actionPath in the memory
+	memory.encodeActions(uidPath);
+
 	//Loop through each action in the uidList and execute that action
 	for(var i = 0; i < uidPath.length; i++){
 
@@ -680,7 +685,8 @@ StoryTree.prototype.executeAction = function(character, uidPath){
 
 			//Check if the characteristic exists for that character,
 			//If not, we just use the default value for that character
-			if(char.characteristics[exp.cls] == undefined){
+			var characteristic = char.characteristics[exp.cls];
+			if(characteristic == undefined){
 				//Get sdbClass values for that characteristic
 				var sdbClass = that.SDB.SDBClasses[exp.cls];
 				if(sdbClass == undefined){
@@ -694,11 +700,16 @@ StoryTree.prototype.executeAction = function(character, uidPath){
 
 			}
 
-			//parse the action for that character
-			char.parseExpression(exp.cls, exp.type, exp.operation, exp.value);
+			//Now we want to encode the expression into the character's memory, before we execute the change
+			memory.encodeVecValue(exp, characteristic);
 
+			//parse the action for that character
+			char.parseExpression(exp.cls, exp.type, exp.operation, exp.value);	
 		}
 	}
+
+	//After all of that, we want to add the memory to the memBank
+	that.characterDB.getCharacter(character).memBank.addMemory(memory);
 }
 
 //StoryTree.getCharacters()

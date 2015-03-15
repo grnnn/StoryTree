@@ -81,25 +81,222 @@ var Memory = function(){
 	this.actionPath = "";
 }
 
+//Memory.encodeVecValue(expression, characteristic)
+//Sets the vector change value for a memory given an expression and its corresponding characteristic
+//ARGUMENTS:
+//	expression(Expression) - the expression that changes the world state
+//	characteristic(Characteristic) - the thing that contains the world state value
+//RETURN void
+Memory.prototype.encodeVecValue = function(expression, characteristic){
+
+	//Get the correct key for the vector value
+	var key = expression.characterName + ":" + expression.cls + ":" + expression.type;
+
+	//Create the float value that we're assigning in the vector, 
+	//see if we've already calculated some change for it
+	var val = 0;
+	if(this.memVec[key] != undefined){
+		val = this.memVec[key];
+	}
+	console.log(key);
+
+	//If the characteristic is a boolean, calculate the percent change
+	if(characteristic.isBoolean){
+		//There's no change if the 2 values are equal
+		if(expression.value === characteristic.value){
+			val += 0;
+		//Else there's 100% change
+		} else {
+			val += 1;
+		}
+
+	} else {
+		//Depending on the operator, get the amount of change happening
+		var oldval = characteristic.value;
+		var changeVal = Math.abs(expression.value);
+		var actualChange = 0;
+
+		console.log("old value: " + oldval);
+		console.log("change value: " + changeVal);
+		switch(expression.operation){
+			case "+":
+				if(oldval + changeVal > characteristic.max){
+					actualChange = characteristic.max - changeVal;
+				} else {
+					actualChange = changeVal;
+				}
+				break;
+			case "-":
+				if(oldval - changeVal < characteristic.min){
+					actualChange = characteristic.max - changeVal;
+				} else {
+					actualChange = changeVal;
+				}
+				break;
+			case "=":
+				actualChange = Math.abs(oldval - changeVal);
+				break;
+		}
+
+		//Now calculate the percentage of the change
+		var percentChange = actualChange/(characteristic.max-characteristic.min);
+
+		//Finally, add to the existing val
+		val += percentChange;
+
+		console.log(val);
+	}
+
+	console.log(val);
+
+	//Now we can finally encode the vector value
+	this.memVec[key] = val;
+}
+
+//memory.normalize()
+//Returns a normalized Memory object
+//ARGUMENTS: void
+//RETURN Memory
+Memory.prototype.normalize = function(){
+	//Create the thing we're returning
+	var newMem = new Memory();
+	//Set the action Path in the new memory
+	newMem.encodeActions(this.actionPath);
+
+	//Now loop through the existing keys in memvec to get the length of the vector
+	var length = 0;
+	for(var key in this.memVec){
+		length += this.memVec[key] * this.memVec[key];
+	}
+	length = Math.sqrt(length);
+
+	//Now loop through those keys again to do the normalizing
+	for(var key in this.memVec){
+		var normVal = this.memVec[key]/length;
+
+		newMem.memVec[key] = normVal;
+	}
+
+	//Now we return the normalized memory vector
+	return newMem;
+};
+
+//memory.dot(memory)
+//Will take the dot product of 2 memory vectors, normalizes them, returns a similarity between 0 and 1
+//ARGUMENTS:
+//	memory(Memory) - another memory that we're dotting with this one
+//return float
+Memory.prototype.dot = function(memory){
+
+	//We want to iterate through the memory with the smallest length, for efficiency's sake
+	//find which vector that is
+	var shorter;
+	var longer;
+	if(Object.keys(this.memVec).length > Object.keys(memory.memVec).length){
+		shorter = this;
+		longer = memory;
+	} else {
+		shorter = memory;
+		longer = this;
+	}
+
+	//Now normalize both vectors
+	shorter = shorter.normalize();
+	longer = longer.normalize();
+
+	//Start the dot product
+	var dotProduct = 0;
+
+	//Now iterate through the shorter vector
+	for(var key in shorter.memVec){
+		//Get the key of the shorter vec (we can assume it exists)
+		var sKey = shorter.memVec[key];
+		//Get the key of the longer vec (check if it's defined), assume it's 0 otherwise
+		var lKey = 0;
+		if(longer.memVec[key] != undefined){
+			lKey = longer.memVec[key];
+		}
+
+		dotProduct += sKey * lKey;
+	}
+
+	//Now return the dotProduct
+	return dotProduct;
+}
+
 //Memory.encodeActions(actions)
 //Sets a set of actions into the actionPath string
 //ARGUMENTS:
-//	actions([int]) - set of actions to be encoded
+//	actions([int] or string) - set of actions to be encoded
 //RETURN void
 Memory.prototype.encodeActions = function(actions){
 
+	if(Object.prototype.toString.call( actions ) === '[object Array]'){
+		var actionString = "[" + actions[0] + ":";
+		for(var i = 1; i < actions.length; i++){
+			actionString += actions[i];
+		}
+		actionString += "]";
+
+		this.actionPath = actionString;
+		return;
+	}
+
+	if(typeof actions === "string"){
+		this.actionPath = actions;
+		return;
+	}
+
+	alert("Memory.encodeActions() error: the argument was not an array or a string.");
 }
 
 /*MemoryBank class, contains a list of Memories that is used as a heuristic for a getOptions search
 *
-*	memories([Memory]) - a list of memories that is used to compare against possible outcomes
+* memories([Memory]) - a list of memories that is used to compare against possible outcomes
 * timeStep(int) - Records now many times the player has interacted with this character
+* normalizedMemVec(Memory) - a Memory composed of all previous memories, with a appropriate weighting
 */
 var MemoryBank = function(){
 	this.memories = [];
-
 	this.timeStep = 0;
+
+	this.totalMemVec = new Memory();
 }
+
+//MemoryBank.addMemory(memory)
+//Adds a memory to the memory bank, assuming that it's been constructed correctly first
+//ARGUMENTS:
+//	memory(Memory) - the memory to be added
+//RETURN void
+MemoryBank.prototype.addMemory = function(memory){
+	this.memories.push(memory);
+	this.timeStep++;
+	this.refreshVec();
+}
+
+//MemoryBank.refreshVec()
+//To be called every time a decision is made, this will encode the most recent memory into the totalMemVec
+//ARGUMENTS void
+//RETURN void
+MemoryBank.prototype.refreshVec = function(){
+	//Get our most recent memory
+	var memory = this.memories[this.timeStep-1];
+
+	//Loop through that memory's memVec
+	for(var key in memory.memVec){
+		var val = memory.memVec[key];
+
+		//If we have a value at that key already, get it before overwriting it
+		var newVal = 0;
+		if(this.totalMemVec.memVec[key] != undefined){
+			newVal = this.totalMemVec.memVec[key];
+		}
+		newVal += val;
+
+		//Now we can set the new vector value
+		this.totalMemVec.memVec[key] = newVal;
+	}
+};
 
 /*Character class, a character is an enitity that can have characteristics and a Speak Tree
 *
