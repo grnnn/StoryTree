@@ -92,19 +92,18 @@ Memory.prototype.encodeVecValue = function(expression, characteristic){
 	//Get the correct key for the vector value
 	var key = expression.characterName + ":" + expression.cls + ":" + expression.type;
 
-	//Create the float value that we're assigning in the vector, 
+	//Create the float value that we're assigning in the vector,
 	//see if we've already calculated some change for it
 	var val = 0;
 	if(this.memVec[key] != undefined){
 		val = this.memVec[key];
 	}
-	console.log(key);
 
 	//If the characteristic is a boolean, calculate the percent change
 	if(characteristic.isBoolean){
-		//There's no change if the 2 values are equal
+		//There's no change if the 2 values are equal, simply return
 		if(expression.value === characteristic.value){
-			val += 0;
+			return;
 		//Else there's 100% change
 		} else {
 			val += 1;
@@ -115,9 +114,6 @@ Memory.prototype.encodeVecValue = function(expression, characteristic){
 		var oldval = characteristic.value;
 		var changeVal = Math.abs(expression.value);
 		var actualChange = 0;
-
-		console.log("old value: " + oldval);
-		console.log("change value: " + changeVal);
 		switch(expression.operation){
 			case "+":
 				if(oldval + changeVal > characteristic.max){
@@ -143,11 +139,7 @@ Memory.prototype.encodeVecValue = function(expression, characteristic){
 
 		//Finally, add to the existing val
 		val += percentChange;
-
-		console.log(val);
 	}
-
-	console.log(val);
 
 	//Now we can finally encode the vector value
 	this.memVec[key] = val;
@@ -291,7 +283,12 @@ MemoryBank.prototype.refreshVec = function(){
 		if(this.totalMemVec.memVec[key] != undefined){
 			newVal = this.totalMemVec.memVec[key];
 		}
-		newVal += val;
+
+		//Get the correct weight for this timestep
+		var weight = 0.1 * (this.timeStep-1);
+
+		//Add the value and weight to the new value
+		newVal += val + weight;
 
 		//Now we can set the new vector value
 		this.totalMemVec.memVec[key] = newVal;

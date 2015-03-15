@@ -3,9 +3,10 @@
 * 	SDB(SDB) - The SDB of the StoryTree
 * 	characters(CharacterDB) - The database of all characters
 * 	loadingSDB(bool) - true if SDB is loading
-*	loadingCharacters(bool) - true if Characters are loading
-*	loadingTree(bool) - true if Trees are loading
-*	badFormatting(bool) - if this is true, this aborts all loading functions
+*		loadingCharacters(bool) - true if Characters are loading
+*		loadingTree(bool) - true if Trees are loading
+*		badFormatting(bool) - if this is true, this aborts all loading functions
+*		conversationType(float) - specifies how salient we want NPCs to be, 0.5(balanced) by default
 */
 var StoryTree = function(){
 	this.SDB = new SDB();
@@ -17,6 +18,8 @@ var StoryTree = function(){
 	this.loadingActions = false;
 
 	this.badFormatting = false;
+
+	this.conversationType = 0.5;
 };
 
 // StoryTree.setSDB(String path)
@@ -576,6 +579,15 @@ StoryTree.prototype.getOptions = function(character, numOfOptions){
 		traverse(actionUID);
 	}
 
+	//
+	//Now that we have our list of doable action paths, we need to sort them by salience,
+	//         and then eliminate any that have the same class that are lower priority than another
+	//
+	var sortedUIDs = [];
+	for(var b = 0; b < uids.length; b++){
+		var uidPath = uids[b];
+	}
+
 	//return the list of uids for doable actions
 	return uids;
 
@@ -690,7 +702,7 @@ StoryTree.prototype.executeAction = function(character, uidPath){
 				//Get sdbClass values for that characteristic
 				var sdbClass = that.SDB.SDBClasses[exp.cls];
 				if(sdbClass == undefined){
-					alert("Error: There's no class called " + exp.cls + ". Look in " + exp.characterName + "'s Speak Tree.");
+					alert("Error: There's no class called " + exp.cls + ". Look in " + exp.characterName + "'s Action Tree.");
 					return;
 				}
 
@@ -699,12 +711,32 @@ StoryTree.prototype.executeAction = function(character, uidPath){
 				char.setCharacteristic(characteristic);
 
 			}
+			//Now we have to check if the type exists too
+			else {
+				if(characteristic[exp.type] == undefined){
+					//Get sdbType values for that characteristic
+					var cls = that.SDB.SDBClasses[exp.cls];
+					var sdbType = cls.types[exp.type];
+					if(sdbType == undefined){
+						alert("Error: There's no sdb type called " + exp.type + " for the class " + exp.cls + ". Look in " + exp.characterName + "'s Action Tree.");
+						return;
+					}
+
+					characteristic = new Characteristic(exp.cls, exp.type, cls.min, cls.max, cls.isBoolean, cls.defaultVal);
+					//Quickly load that characteristic into the character
+					char.setCharacteristic(characteristic);
+				}
+				//Now we can finally assume that the characteristic is in the system
+				else {
+					characteristic = characteristic[exp.type];
+				}
+			}
 
 			//Now we want to encode the expression into the character's memory, before we execute the change
 			memory.encodeVecValue(exp, characteristic);
 
 			//parse the action for that character
-			char.parseExpression(exp.cls, exp.type, exp.operation, exp.value);	
+			char.parseExpression(exp.cls, exp.type, exp.operation, exp.value);
 		}
 	}
 
