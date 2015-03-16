@@ -498,7 +498,7 @@ StoryTree.prototype.getOptions = function(character, numOfOptions){
 			//Get sdbClass values for that characteristic
 			var sdbClass = that.SDB.SDBClasses[precondition.cls];
 			if(sdbClass == undefined){
-				alert("Error: There's no class called " + precondition.cls + ". Look in " + precondition.characterName + "'s Speak Tree.");
+				alert("Error: There's no class called " + precondition.cls + ". Look in " + precondition.characterName + "'s Story Tree.");
 				return;
 			}
 
@@ -511,8 +511,9 @@ StoryTree.prototype.getOptions = function(character, numOfOptions){
 			if(characteristic == undefined){
 				//Get sdbClass values for that characteristic
 				var sdbClass = that.SDB.SDBClasses[precondition.cls];
-				if(sdbClass == undefined){
-					alert("Error: There's no class called " + precondition.cls + ". Look in " + precondition.characterName + "'s Speak Tree.");
+				var sdbval = sdbClass.types[precondition.type];
+				if(sdbval == undefined){
+					alert("Error: There's no type called " + precondition.type + ". Look in " + precondition.characterName + "'s Story Tree.");
 					return;
 				}
 
@@ -562,10 +563,25 @@ StoryTree.prototype.getOptions = function(character, numOfOptions){
 			//Quickly load that characteristic into the character
 			char.setCharacteristic(characteristic);
 
+		} else {
+			characteristic = characteristic[expression.type];
+			if(characteristic == undefined){
+				//Get sdbClass values for that characteristic
+				var sdbClass = that.SDB.SDBClasses[expression.cls];
+				var sdbval = sdbClass.types[expression.type];
+				if(sdbval == undefined){
+					alert("Error: There's no type called " + expression.type + ". Look in " + expression.characterName + "'s Story Tree.");
+					return;
+				}
+
+				characteristic = new Characteristic(expression.cls, expression.type, sdbClass.min, sdbClass.max, sdbClass.isBoolean, sdbClass.defaultVal);
+				//Quickly load that characteristic into the character
+				char.setCharacteristic(characteristic);
+			}
 		}
 
 		//Okay, now we can assume that we have the correct characteristic, and now we can evaluate it
-		memory.encodeVecValue(expression, characteristic);		
+		memory.encodeVecValue(expression, characteristic);
 	}
 
 	//Private function that traverses the non-binary StoryTree
@@ -627,6 +643,10 @@ StoryTree.prototype.getOptions = function(character, numOfOptions){
 
 			dists.push(dist);
 
+			if(classes.length !== uids.length){
+				classes.push("");
+			}
+
 			return;
 		}
 
@@ -658,23 +678,15 @@ StoryTree.prototype.getOptions = function(character, numOfOptions){
 	//Now that we have our list of doable action paths, we need to sort them by salience,
 	//         and then eliminate any that have the same class that are lower priority than another
 	//
-	var sortedIndeces = [0];
-	for(var b = 1; b < dists.length; b++){
-		//Now go through the sortedUIDs
-		for(var c = 0; c < sortedIndeces.length; c++){
-			var indexOfUID = sortedIndeces[c];
-
-			//If the value is less than the current, insert it before
-			if(dists[indexOfUID] > dists[b]){
-				sortedIndeces.splice(c, 0, b);
-				continue;
-			}
-
-			//If we reach the end, just push the value onto the end
-			if(c === sortedIndeces.length-1){
-				sortedIndeces.push(b);
-			}
-		}
+	var sortedDists = dists.slice();
+	sortedDists.sort(function(a, b){
+		return a - b;
+	});
+	var sortedIndeces = [];
+	for(var b = 0; b < sortedDists.length; b++){
+		var index = dists.indexOf(sortedDists[b]);
+		dists[b] = -1;
+		sortedIndeces.push(index);
 	}
 
 	//Now, we have to return the correct uidPaths in order, make sure to skip over repeat classes
@@ -682,16 +694,11 @@ StoryTree.prototype.getOptions = function(character, numOfOptions){
 	var d = 0;
 	var sorted = [];
 	var myClasses = [];
-	while(true){
-		//If we get all of our desired paths or we reach the end of our list, break
-		if(count === 0 || d === uids.length){
-			break;
-		}
-
+	while(count !== 0 && d !== uids.length){
 		//If we haven't visited the class of the first path, add that path to sorted
 		//Add the class to our tracked classes
 		//decrement the count
-		if(myClasses.indexOf(classes[ sortedIndeces[d] ]) === -1){
+		if(myClasses.indexOf(classes[ sortedIndeces[d] ]) === -1 || classes[ sortedIndeces[d] ] === "" ){
 			myClasses.push(classes[ sortedIndeces[d] ]);
 			sorted.push(uids[ sortedIndeces[d] ]);
 			count--;
