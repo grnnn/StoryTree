@@ -471,7 +471,8 @@ StoryTree.prototype.getOptions = function(character, numOfOptions){
 	}
 
 	//Get the character's corresponding speak tree
-	var tree = that.characterDB.getCharacter(character).tree;
+	var myCharacter = that.characterDB.getCharacter(character);
+	var tree = myCharacter.tree;
 
 	//If there's no tree, that means there's no character with that name
 	//Error checking
@@ -491,7 +492,7 @@ StoryTree.prototype.getOptions = function(character, numOfOptions){
 		var characteristics = char.characteristics;
 
 		//Get the characteristic
-		var characteristic = char.characteristics[precondition.cls][precondition.type];
+		var characteristic = char.characteristics[precondition.cls];
 		//If the characteristic doesn't exist for that character, we just use the default value for that character
 		if(characteristic == undefined){
 			//Get sdbClass values for that characteristic
@@ -505,6 +506,20 @@ StoryTree.prototype.getOptions = function(character, numOfOptions){
 			//Quickly load that characteristic into the character
 			char.setCharacteristic(characteristic);
 
+		} else {
+			characteristic = characteristic[precondition.type];
+			if(characteristic == undefined){
+				//Get sdbClass values for that characteristic
+				var sdbClass = that.SDB.SDBClasses[precondition.cls];
+				if(sdbClass == undefined){
+					alert("Error: There's no class called " + precondition.cls + ". Look in " + precondition.characterName + "'s Speak Tree.");
+					return;
+				}
+
+				characteristic = new Characteristic(precondition.cls, precondition.type, sdbClass.min, sdbClass.max, sdbClass.isBoolean, sdbClass.defaultVal);
+				//Quickly load that characteristic into the character
+				char.setCharacteristic(characteristic);
+			}
 		}
 
 		//Depending on the operator, see if the precondition passes evaluation
@@ -522,14 +537,45 @@ StoryTree.prototype.getOptions = function(character, numOfOptions){
 		return returnVal;
 	}
 
+	//Private function that evaluates an expression and sets up its Memory value
+	//ARGUMENTS:
+	//	expression(Expression) - the expression to be evaluates
+	//	memory(Memory) - what we're setting up
+	//RETURN void
+	function evaluateExpression(expression, memory){
+		//find the character for that characteristic
+		var char = that.characterDB.getCharacter(expression.characterName);
+		var characteristics = char.characteristics;
+
+		//Get the characteristic
+		var characteristic = char.characteristics[expression.cls];
+		//If the characteristic doesn't exist for that character, we just use the default value for that character
+		if(characteristic == undefined){
+			//Get sdbClass values for that characteristic
+			var sdbClass = that.SDB.SDBClasses[expression.cls];
+			if(sdbClass == undefined){
+				alert("Error: There's no class called " + expression.cls + ". Look in " + expression.characterName + "'s Speak Tree.");
+				return;
+			}
+
+			characteristic = new Characteristic(expression.cls, expression.type, sdbClass.min, sdbClass.max, sdbClass.isBoolean, sdbClass.defaultVal);
+			//Quickly load that characteristic into the character
+			char.setCharacteristic(characteristic);
+
+		}
+
+		//Okay, now we can assume that we have the correct characteristic, and now we can evaluate it
+		memory.encodeVecValue(expression, characteristic);		
+	}
+
 	//Private function that traverses the non-binary StoryTree
 	//Recursively goes through the tree and finds each available action
 	//ARGUMENTS:
-	//	uid(int) - the uid of the action to be traversed
+	//	uidPath([int]) - the uid array of the actions that have been traversed
+	//	uid(int) - the next uid to traverse to
+	//	memory(Memory) - the memory vector that we're setting up
 	//return void
-	function traverse(uid){
-
-		//console.log(uid);
+	function traverse(uidPath, uid, memory){
 
 		//Get action object
 		var actionObj = tree.actions[uid];
@@ -549,14 +595,38 @@ StoryTree.prototype.getOptions = function(character, numOfOptions){
 		//If something doesn't pass, we return
 		if(trig) return;
 
+		//Now we can loop through each expression and evaluate them
+		for(var k = 0; k < actionObj.expressions.length; k++){
+			var exp = actionObj.expressions[k];
+
+			//Evaluate the expression and write to the hypothetical memory
+			evaluateExpression(exp, memory);
+		}
+
 		//We can assume now that we've succesfully passed the preconditions
 		//This means we can add the action to the uid list
-		uidList.push(uid);
+		uidPath.push(uid);
 
-		//If the action is a leaf, simply return
+		//Now we have to see if there's a class for this action
+		//If so, we add it to the list, but only if the length of classes is equal to the length of uids
+		if(actionObj.cls != undefined && uids.length === classes.length){
+			classes.push(actionObj.cls);
+		}
+
+		//If the action is a leaf, push the uidPath on the available paths
+		// and then push a new distance to conversation types on dists
 		if(actionObj.isLeaf()){
-			uids.push(uidList);
-			uidList = [];
+			uids.push(uidPath);
+
+			//Normalize the hypothetical memory
+			var normMem = memory.normalize();
+			//Get the dot product
+			var dotproduct = normMem.dot(normalComposedMemory);
+			//Get the dist to the conversation type
+			var dist = Math.abs(that.conversationType - dotproduct);
+
+			dists.push(dist);
+
 			return;
 		}
 
@@ -565,31 +635,74 @@ StoryTree.prototype.getOptions = function(character, numOfOptions){
 			var actionUID = actionObj.children[i];
 			var action = tree.actions[actionUID];
 
-			traverse(actionUID);
+			traverse(uidPath, actionUID, memory.copy());
 		}
 	}
 
 	//loop through each top action, traversing through their corresponding trees
 	//keep track of which actions we've added and how many were added
+	//We also have to create hypothetical memory vectors for each uidPath we want
+	//We also want to track our similarity to the conversation types we want
+	//We also need to track which classes our actionPaths contain
 	var uids = [];
-	var uidList = [];
+	var dists = [];
+	var classes = [];
+	var normalComposedMemory = myCharacter.memBank.totalMemVec.normalize();
 	for(var a = 0; a < tree.firsts.length; a++){
 		var actionUID = tree.firsts[a];
 
-		traverse(actionUID);
+		traverse([], actionUID, new Memory());
 	}
 
 	//
 	//Now that we have our list of doable action paths, we need to sort them by salience,
 	//         and then eliminate any that have the same class that are lower priority than another
 	//
-	var sortedUIDs = [];
-	for(var b = 0; b < uids.length; b++){
-		var uidPath = uids[b];
+	var sortedIndeces = [0];
+	for(var b = 1; b < dists.length; b++){
+		//Now go through the sortedUIDs
+		for(var c = 0; c < sortedIndeces.length; c++){
+			var indexOfUID = sortedIndeces[c];
+
+			//If the value is less than the current, insert it before
+			if(dists[indexOfUID] > dists[b]){
+				sortedIndeces.splice(c, 0, b);
+				continue;
+			}
+
+			//If we reach the end, just push the value onto the end
+			if(c === sortedIndeces.length-1){
+				sortedIndeces.push(b);
+			}
+		}
+	}
+
+	//Now, we have to return the correct uidPaths in order, make sure to skip over repeat classes
+	var count = numOfOptions;
+	var d = 0;
+	var sorted = [];
+	var myClasses = [];
+	while(true){
+		//If we get all of our desired paths or we reach the end of our list, break
+		if(count === 0 || d === uids.length){
+			break;
+		}
+
+		//If we haven't visited the class of the first path, add that path to sorted
+		//Add the class to our tracked classes
+		//decrement the count
+		if(myClasses.indexOf(classes[ sortedIndeces[d] ]) === -1){
+			myClasses.push(classes[ sortedIndeces[d] ]);
+			sorted.push(uids[ sortedIndeces[d] ]);
+			count--;
+		}
+
+		//Increment the next position on the sorted indeces
+		d++;
 	}
 
 	//return the list of uids for doable actions
-	return uids;
+	return sorted;
 
 }
 

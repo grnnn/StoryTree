@@ -81,6 +81,26 @@ var Memory = function(){
 	this.actionPath = "";
 }
 
+//Memory.copy()
+//Copies a memory instance and returns a new one
+//ARGUMENTS void
+//RETURN Memory
+Memory.prototype.copy = function(){
+	//The new memory object
+	var newMem = new Memory();
+
+	//copy the action path
+	newMem.encodeActions(this.actionPath);
+
+	//Now for each key-value of memory, create that new pair in newMem
+	for(var key in this.memVec){
+		newMem.memVec[key] = this.memVec[key];
+	}
+
+	//return the new memory
+	return newMem;
+}
+
 //Memory.encodeVecValue(expression, characteristic)
 //Sets the vector change value for a memory given an expression and its corresponding characteristic
 //ARGUMENTS:
@@ -191,10 +211,6 @@ Memory.prototype.dot = function(memory){
 		shorter = memory;
 		longer = this;
 	}
-
-	//Now normalize both vectors
-	shorter = shorter.normalize();
-	longer = longer.normalize();
 
 	//Start the dot product
 	var dotProduct = 0;
