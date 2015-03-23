@@ -27,10 +27,10 @@ Line.prototype.checkLine = function(character, content){
 	if(typeof character !== "string"){
 		isBad = true;
 		errorString += "The character of your Line is not a string. \n";
-	} else if(character !== "%i%" || character !== "%r%"){
-		console.log("Line warning, a character in one of your lines is not the macro '%i%' or '%r%'. " +
-								"This means you have manually set which character is speaking here, and your dialogue is not reactive to who the player is talking to.");
-	}
+	} /*else if(character !== "%i%" || character !== "%r%"){
+		//console.log("Line warning, a character in one of your lines is not the macro '%i%' or '%r%'. " +
+		//						"This means you have manually set which character is speaking here, and your dialogue is not reactive to who the player is talking to.");
+	}*/
 
 	//Check line
 	if(typeof content !== "string"){
@@ -101,7 +101,7 @@ Dialogue.prototype.checkDialogue = function(path, lines, hintLine){
 		}
 
 		//Convert the path to a string
-		if(!isBad) path = DialogueDB.pathToString(path);
+		if(!isBad) path = DialogueDB.prototype.pathToString(path);
 	}
 	//Now check if it's a string otherwise
 	else if(typeof path !== "string"){
@@ -119,8 +119,8 @@ Dialogue.prototype.checkDialogue = function(path, lines, hintLine){
 		linesAreArray = true;
 		//Now check line errors if it is an array
 		for(var j = 0; j < lines.length; j++){
-			lineErrors += Line.checkLine(lines[j].character, lines[j].content);
-			if(Line.checkLine(lines[j].character, lines[j].content) !== ""){
+			lineErrors += Line.prototype.checkLine(lines[j].character, lines[j].content);
+			if(Line.prototype.checkLine(lines[j].character, lines[j].content) !== ""){
 				isBad = true;
 				errorString += "One or more of your lines are incorrectly formatted. \n";
 			}
@@ -198,6 +198,7 @@ DialogueDB.prototype.addDialogue = function(path, lines, hintLine){
 
 	//Do the mapping
 	this.dialogues[path] = new Dialogue(path, lines, hintLine);
+
 };
 
 //DialogueDB.getDialogue(path)
@@ -210,6 +211,7 @@ DialogueDB.prototype.getDialogue = function(path){
 	if(Object.prototype.toString.call( path ) === '[object Array]'){
 		path = this.pathToString(path);
 	}
+
 
 	//return the dialogue object
 	return this.dialogues[path];
@@ -376,7 +378,7 @@ StoryTree.prototype.setDialogue = function(character, info){
 			var dialogue = jsonData[i];
 
 			//Error check our dialogue
-			if(Dialogue.checkDialogue(dialogue.path, dialogue.lines, dialogue.hintLine)){
+			if(Dialogue.prototype.checkDialogue(dialogue.path, dialogue.lines, dialogue.hintLine)){
 				that.badFormatting = true;
 				return;
 			}
@@ -451,7 +453,7 @@ StoryTree.prototype.getDialogueOptions = function(name, numberOfOptions){
 	var options = this.getOptions(name, numberOfOptions);
 
 	//Get character and their dialogueDB
-	var character = this.characterDB[name];
+	var character = this.characterDB.getCharacter(name);
 	var dialogueDB = character.dialogueDB;
 
 	//Build up our dialogue options list
@@ -460,8 +462,8 @@ StoryTree.prototype.getDialogueOptions = function(name, numberOfOptions){
 		var option = options[i];
 		dialogueOptions.push(
 			{
-				hintLine: dialogueDB.getDialogue[option].hintLine,
-				uidPath: DialogueDB.pathToString(option)
+				hintLine: dialogueDB.getDialogue(option).hintLine,
+				uidPath: DialogueDB.prototype.pathToString(option)
 			});
 	}
 
@@ -470,11 +472,29 @@ StoryTree.prototype.getDialogueOptions = function(name, numberOfOptions){
 };
 
 //StoryTree.executeDialogue(uidPath)
-//Exceutes that given line of dialogue, returns the set of lines for that dialogue
+//Exceutes a given line of dialogue for a character, returns the set of lines for that dialogue
 //ARGUMENTS:
+//	character(string) - the name of the character
 //	uidPath(string or [int]) - path of uids to execute
 //RETURN [character(string), line(string)]
-StoryTree.prototype.executeDialogue = function(uidPath){
+StoryTree.prototype.executeDialogue = function(character, uidPath){
 
-	//TODO implement function
+	//First and foremost, execute the actions
+	this.executeAction(character, uidPath);
+
+	//Get our dialogue object
+	var dialogueObj = this.characterDB.getCharacter(character).dialogueDB.getDialogue(uidPath);
+
+	//Build up our dialogue array
+	var lines = [];
+	for(var i = 0; i < dialogueObj.lines.length; i++){
+		var line = dialogueObj.lines[i];
+		lines.push({
+			character: line.character,
+			content: line.content
+		});
+	}
+
+	//Return our data
+	return lines;
 };

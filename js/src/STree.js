@@ -252,11 +252,13 @@ Action.prototype.checkAction = function(name, uid, first, cls, preconditions, ex
 		errorString += "The class of your action is not defined. \n";
 	}
 
-	//Check if the preconditions are in an array
+	//Check if the preconditions are in an array, they can be undefined
 	var preconditionErrors = "";
 	if(Object.prototype.toString.call( preconditions ) !== '[object Array]'){
-		isBad = true;
-		errorString += "The preconditions of your action are not in an array. \n"
+		if(preconditions !== undefined){
+			isBad = true;
+			errorString += "The preconditions of your action are not in an array. \n";
+		}
 	} else {
 		//If it is an array, then error check all preconditions of the action, record the string
 		for(var i = 0; i < preconditions.length; i++){
@@ -409,13 +411,14 @@ STree.prototype.checkActionTree = function(){
 				//If the child is equal to one of the entries in the list, run the error message
 				//We also start returning the isBad bool up the traversal
 				if(child === currentActionList[j]){
-					goneBad(currentActionList);
+					//goneBad(currentActionList);
+					moreDetail(uid, child, currentActionList);
 					return true;
 				}
 			}
 
 			//Otherwise, continue the traversal
-			var isBad = traverse(child, currentActionList);
+			var isBad = traverse(child, currentActionList.slice());
 		}
 		//If we've gone bad somewhere, we start returning true up the tree
 		return isBad;
@@ -434,6 +437,15 @@ STree.prototype.checkActionTree = function(){
 			+ "There is an infinite loop of actions in one of your action trees. \n"
 			+ "The actions with these uids lead back to themselves: \n"
 			+ actionString);
+	}
+
+	function moreDetail(uid, child, currentActionList){
+		var actionString = "[" + currentActionList[0];
+		for(var k = 1; k < currentActionList.length; k++){
+			actionString += ", " + currentActionList[k];
+		}
+		actionString += "]";
+		alert("The uid " + uid + " leads to the child uid of " + child + " which is already in the action Stack " + actionString);
 	}
 
 	//Create a more global isBad variable

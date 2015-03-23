@@ -3,12 +3,14 @@
 * 	SDB(SDB) - The SDB of the StoryTree
 * 	characters(CharacterDB) - The database of all characters
 * 	loadingSDB(bool) - true if SDB is loading
-*		loadingCharacters(bool) - true if Characters are loading
-*		loadingTree(bool) - true if Trees are loading
-*		badFormatting(bool) - if this is true, this aborts all loading functions
-*		conversationType(float) - specifies how salient we want NPCs to be, 0.5(balanced) by default
+*	loadingCharacters(bool) - true if Characters are loading
+*	loadingCharacteristics(bool) - true if any characteristics are loading
+*	loadingActions(bool) - true if any actions are loading
+*	badFormatting(bool) - if this is true, this aborts all loading functions
+*	conversationType(float) - specifies how salient we want NPCs to be, 0.5(balanced) by default
 */
 var StoryTree = function(){
+//These are the members of StoryTree
 	this.SDB = new SDB();
 	this.characterDB = new CharacterDB();
 
@@ -327,9 +329,11 @@ StoryTree.prototype.setActions = function(character, info){
 			var actionObj = tree.actions[uid];
 
 			//Loop through each precondition and set it to the action object
-			for(var d = 0; d < action.preconditions.length; d++){
-				var pre = action.preconditions[d];
-				actionObj.addPrecondition(pre.character, pre.class, pre.type, pre.operation, pre.value);
+			if(action.preconditions !== undefined) {
+				for(var d = 0; d < action.preconditions.length; d++){
+					var pre = action.preconditions[d];
+					actionObj.addPrecondition(pre.character, pre.class, pre.type, pre.operation, pre.value);
+				}
 			}
 
 			//Loop through each expression and set it to the action object
@@ -352,6 +356,13 @@ StoryTree.prototype.setActions = function(character, info){
 			actionObj.setClass(action.class);
 
 		}
+
+		//Now check the tree for loops
+		if(tree.checkActionTree()){
+			that.badFormatting = true;
+			return;
+		}
+
 
 		//Now we're done loading actions ;)
 		that.loadingActions = false;
@@ -432,13 +443,13 @@ StoryTree.prototype.set = function(thing, arg1, arg2, arg3){
 			this.setSDB(arg1);
 			break;
 		case "character":
-			this.setCharacter(arg1);
+			this.setCharacters(arg1);
 			break;
 		case "characteristic":
 			this.setCharacteristics(arg1);
 			break;
 		case "action":
-			//this.setActions(arg1, arg2);
+			this.setActions(arg1, arg2);
 			break;
 		case "precondition":
 			//this.setPreconditions(arg1, arg2, arg3);
@@ -591,7 +602,11 @@ StoryTree.prototype.getOptions = function(character, numOfOptions){
 	//	uid(int) - the next uid to traverse to
 	//	memory(Memory) - the memory vector that we're setting up
 	//return void
-	function traverse(uidPath, uid, memory){
+	function traverse(uidPath, uid, memory, cls){
+		counter++;
+		if(counter > 5000){
+			console.log(uid);
+		}
 
 		//Get action object
 		var actionObj = tree.actions[uid];
@@ -624,9 +639,12 @@ StoryTree.prototype.getOptions = function(character, numOfOptions){
 		uidPath.push(uid);
 
 		//Now we have to see if there's a class for this action
-		//If so, we add it to the list, but only if the length of classes is equal to the length of uids
-		if(actionObj.cls != undefined && uids.length === classes.length){
-			classes.push(actionObj.cls);
+		//If so, we add it to the list
+		var myClass = "";
+		if(actionObj.cls != undefined && cls === ""){
+			myClass = actionObj.cls;
+		} else {
+			myClass = cls;
 		}
 
 		//If the action is a leaf, push the uidPath on the available paths
@@ -643,9 +661,7 @@ StoryTree.prototype.getOptions = function(character, numOfOptions){
 
 			dists.push(dist);
 
-			if(classes.length !== uids.length){
-				classes.push("");
-			}
+			classes.push(myClass);
 
 			return;
 		}
@@ -655,7 +671,7 @@ StoryTree.prototype.getOptions = function(character, numOfOptions){
 			var actionUID = actionObj.children[i];
 			var action = tree.actions[actionUID];
 
-			traverse(uidPath, actionUID, memory.copy());
+			traverse(uidPath.slice(), actionUID, memory.copy(), myClass);
 		}
 	}
 
@@ -668,26 +684,45 @@ StoryTree.prototype.getOptions = function(character, numOfOptions){
 	var dists = [];
 	var classes = [];
 	var normalComposedMemory = myCharacter.memBank.totalMemVec.normalize();
+	var counter = 0;
 	for(var a = 0; a < tree.firsts.length; a++){
 		var actionUID = tree.firsts[a];
 
-		traverse([], actionUID, new Memory());
+		traverse([], actionUID, new Memory(), "");
 	}
 
 	//
 	//Now that we have our list of doable action paths, we need to sort them by salience,
 	//         and then eliminate any that have the same class that are lower priority than another
 	//
+
 	var sortedDists = dists.slice();
 	sortedDists.sort(function(a, b){
 		return a - b;
 	});
 	var sortedIndeces = [];
+	var identicalGroups = {};
+	var lastGroup = -1;
 	for(var b = 0; b < sortedDists.length; b++){
 		var index = dists.indexOf(sortedDists[b]);
-		dists[b] = -1;
+
+		//Apparently this happens a lot?
+		if(index === -1){
+			continue;
+		}
+
+		if(dists.indexOf(-(dists[b])) !== -1){
+			if(lastGroup !== -dists[b]){
+				identicalGroups[dists[b]] = [];
+				lastGroup = -dists[b];
+			}
+			identicalGroups[dists[b]].push(index)
+		}
+
+		dists[b] = -(dists[b]);
 		sortedIndeces.push(index);
 	}
+
 
 	//Now, we have to return the correct uidPaths in order, make sure to skip over repeat classes
 	var count = numOfOptions;
@@ -695,18 +730,32 @@ StoryTree.prototype.getOptions = function(character, numOfOptions){
 	var sorted = [];
 	var myClasses = [];
 	while(count !== 0 && d !== uids.length){
+
+		//Get our key value for a group that we want to randomize
+		//If it's part of a group, choose a random d
+		var key = -(dists[ sortedIndeces[d] ]);
+		if(identicalGroups[key] !== undefined && identicalGroups[key].length > 1){
+				d = identicalGroups[key][Math.floor(Math.random()*identicalGroups[key].length)];
+		}
+
 		//If we haven't visited the class of the first path, add that path to sorted
 		//Add the class to our tracked classes
 		//decrement the count
 		if(myClasses.indexOf(classes[ sortedIndeces[d] ]) === -1 || classes[ sortedIndeces[d] ] === "" ){
+			if(uids[sortedIndeces[d]] == undefined){
+				d++;
+				continue;
+			}
 			myClasses.push(classes[ sortedIndeces[d] ]);
 			sorted.push(uids[ sortedIndeces[d] ]);
+
 			count--;
 		}
 
 		//Increment the next position on the sorted indeces
 		d++;
 	}
+
 
 	//return the list of uids for doable actions
 	return sorted;
@@ -757,9 +806,9 @@ StoryTree.prototype.getActionName = function(character, uid){
 //StoryTree.isLoaded()
 //Just a simple function to tell if it's been loaded
 //RETURN bool - have the JSONs been loaded
-StoryTree.prototype.isLoaded = function(){
+/*StoryTree.prototype.isLoaded = function(){
 	return !(this.loadingSDB || this.loadingActions || this.loadingCharacters || this.loadingCharacteristics);
-}
+}*/
 
 //StoryTree.executeAction()
 //Executes a given action for a given character
@@ -906,14 +955,17 @@ StoryTree.prototype.getCharacteristics = function(character){
 
 	//Build up the list of objects
 	var chars = [];
-	for(var i = 0; i < characteristics.length; i++){
-		var characteristic = characteristics[i];
+	for(var key in characteristics){
+		var characteristicCls = characteristics[key];
+		for(var tKey in characteristicCls){
+			var characteristic = characteristicCls[tKey];
 
-		chars.push({
-			class: characteristic.className,
-			type: characteristic.type,
-			value: characteristic.value
-		})
+			chars.push({
+				class: characteristic.className,
+				type: characteristic.type,
+				value: characteristic.value
+			});
+		}
 	}
 
 	//Return that list
@@ -966,7 +1018,7 @@ StoryTree.prototype.getAllPaths = function(name){
 			var nextUID = action.children[i];
 
 			//Call traverse on the next child
-			traverse(nextUID, actionList);
+			traverse(nextUID, actionList.slice());
 		}
   }
 
