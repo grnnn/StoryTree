@@ -6,6 +6,7 @@
 
 #include "StoryTreeLib.h"
 #include "SDB.h"
+#include "CharacterDB.h"
 
 #include <stdexcept>
 
@@ -13,5 +14,6 @@ namespace StoryTree
 {
 	StoryTree::StoryTree(){
 		mySDB = new SDB();
+		characterDB = new CharacterDB();
 	}
 }

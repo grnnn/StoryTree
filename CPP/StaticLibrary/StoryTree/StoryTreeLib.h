@@ -5,6 +5,7 @@
 #include "SDBClass.h"
 
 class SDB;
+class CharacterDB;
 
 namespace StoryTree{
 
@@ -15,6 +16,7 @@ namespace StoryTree{
 
 	private:
 		SDB*						mySDB;
+		CharacterDB*				characterDB;
 	};
 
 }
