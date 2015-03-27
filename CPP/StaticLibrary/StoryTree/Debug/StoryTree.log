@@ -1,10 +1,20 @@
-﻿Build started 3/25/2015 1:39:25 AM.
+﻿Build started 3/27/2015 12:00:28 AM.
      1>Project "C:\Users\Taylor\Documents\StoryTree\CPP\StaticLibrary\StoryTree\StoryTree.vcxproj" on node 2 (Build target(s)).
      1>ClCompile:
-         C:\Program Files (x86)\Microsoft Visual Studio 12.0\VC\bin\CL.exe /c /ZI /nologo /W3 /WX- /sdl /Od /Oy- /D WIN32 /D _DEBUG /D _LIB /D _UNICODE /D UNICODE /Gm /EHsc /RTC1 /MDd /GS /fp:precise /Zc:wchar_t /Zc:forScope /Yu"stdafx.h" /Fp"Debug\StoryTree.pch" /Fo"Debug\\" /Fd"Debug\vc120.pdb" /Gd /TP /analyze- /errorReport:prompt SDB.cpp
-         SDB.cpp
+         C:\Program Files (x86)\Microsoft Visual Studio 12.0\VC\bin\CL.exe /c /ZI /nologo /W3 /WX- /sdl /Od /Oy- /D WIN32 /D _DEBUG /D _LIB /D _UNICODE /D UNICODE /Gm /EHsc /RTC1 /MDd /GS /fp:precise /Zc:wchar_t /Zc:forScope /Yu"stdafx.h" /Fp"Debug\StoryTree.pch" /Fo"Debug\\" /Fd"Debug\vc120.pdb" /Gd /TP /analyze- /errorReport:prompt Character.cpp CharacterDB.cpp Characteristic.cpp SDBClass.cpp StoryTreeLib.cpp
+         SDBClass.cpp
+         Characteristic.cpp
+         Character.cpp
+         Generating Code...
+         Compiling...
+         StoryTreeLib.cpp
+         CharacterDB.cpp
+         Generating Code...
        Lib:
-         C:\Program Files (x86)\Microsoft Visual Studio 12.0\VC\bin\Lib.exe /OUT:"C:\Users\Taylor\Documents\StoryTree\CPP\StaticLibrary\Debug\StoryTree.lib" /NOLOGO Debug\SDB.obj
+         C:\Program Files (x86)\Microsoft Visual Studio 12.0\VC\bin\Lib.exe /OUT:"C:\Users\Taylor\Documents\StoryTree\CPP\StaticLibrary\Debug\StoryTree.lib" /NOLOGO Debug\Character.obj
+         Debug\CharacterDB.obj
+         Debug\Characteristic.obj
+         Debug\SDB.obj
          Debug\SDBClass.obj
          Debug\stdafx.obj
          Debug\StoryTreeLib.obj
@@ -13,4 +23,4 @@
 
 Build succeeded.
 
-Time Elapsed 00:00:01.23
+Time Elapsed 00:00:04.52

@@ -76,6 +76,10 @@
   <ItemGroup>
     <ClInclude Include="Character.h" />
     <ClInclude Include="CharacterDB.h" />
+    <ClInclude Include="Characteristic.h" />
+    <ClInclude Include="Expression.h" />
+    <ClInclude Include="Memory.h" />
+    <ClInclude Include="MemoryBank.h" />
     <ClInclude Include="SDB.h" />
     <ClInclude Include="SDBClass.h" />
     <ClInclude Include="stdafx.h" />
@@ -85,6 +89,10 @@
   <ItemGroup>
     <ClCompile Include="Character.cpp" />
     <ClCompile Include="CharacterDB.cpp" />
+    <ClCompile Include="Characteristic.cpp" />
+    <ClCompile Include="Expression.cpp" />
+    <ClCompile Include="Memory.cpp" />
+    <ClCompile Include="MemoryBank.cpp" />
     <ClCompile Include="SDB.cpp" />
     <ClCompile Include="SDBClass.cpp" />
     <ClCompile Include="stdafx.cpp">

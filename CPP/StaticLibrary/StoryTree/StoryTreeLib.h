@@ -3,6 +3,8 @@
 #define StoryTreeLib_H
 
 #include "SDBClass.h"
+#include "Characteristic.h"
+#include "Expression.h"
 
 class SDB;
 class CharacterDB;
