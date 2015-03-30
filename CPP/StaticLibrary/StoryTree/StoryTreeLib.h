@@ -9,7 +9,7 @@
 class SDB;
 class CharacterDB;
 
-namespace StoryTree{
+namespace ST{
 
 	class StoryTree{
 	public:

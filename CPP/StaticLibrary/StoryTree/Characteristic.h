@@ -6,7 +6,7 @@
 
 #include <string>
 
-namespace StoryTree{
+namespace ST{
 
 	class Characteristic
 	{
@@ -22,6 +22,9 @@ namespace StoryTree{
 
 		std::string				getClass();
 		std::string				getType();
+		int						getIntValue();
+		bool					getBoolValue();
+		bool					boolean();
 
 		std::string				getCharacter();
 

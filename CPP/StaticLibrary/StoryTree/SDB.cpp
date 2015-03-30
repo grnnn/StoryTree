@@ -10,11 +10,11 @@ SDB::SDB(){
 SDB::~SDB(){
 }
 
-void SDB::addClass(StoryTree::SDBClass cls){
+void SDB::addClass(ST::SDBClass cls){
 	this->classes[cls.getName()] = cls;
 }
 
-StoryTree::SDBClass SDB::getClass(std::string cls){
+ST::SDBClass SDB::getClass(std::string cls){
 	return this->classes[cls];
 }
 
@@ -29,7 +29,7 @@ bool SDB::doesContain(std::string cls, std::string type){
 		return false;
 	}
 
-	StoryTree::SDBClass myClass = clsIt->second;
+	ST::SDBClass myClass = clsIt->second;
 
 	std::string* types = myClass.getTypes();
 

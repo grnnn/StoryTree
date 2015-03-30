@@ -8,7 +8,7 @@
 #include <vector>
 #include <unordered_map>
 
-namespace StoryTree{
+namespace ST{
 	class SDBClass{
 	public:
 		SDBClass();

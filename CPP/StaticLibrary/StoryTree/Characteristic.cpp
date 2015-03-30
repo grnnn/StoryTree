@@ -4,7 +4,7 @@
 
 #include <iostream>
 
-namespace StoryTree{
+namespace ST{
 
 	Characteristic::Characteristic()
 	{
@@ -73,6 +73,17 @@ namespace StoryTree{
 		return (this->character);
 	}
 
+	bool Characteristic::boolean(){
+		return (this->isBoolean);
+	}
+
+	int Characteristic::getIntValue(){
+		return (this->intValue);
+	}
+
+	bool Characteristic::getBoolValue(){
+		return (this->boolValue);
+	}
 
 	//private functions
 	void Characteristic::addValue(int value){

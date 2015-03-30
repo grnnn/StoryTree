@@ -9,7 +9,7 @@
 #include <unordered_map>
 #include <iostream>
 
-namespace StoryTree{
+namespace ST{
 
 	SDBClass::SDBClass(){
 

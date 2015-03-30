@@ -20,8 +20,9 @@ public:
 	~Memory();
 
 	Memory											copy();
-	void											encodeVecValue(StoryTree::Expression expression, StoryTree::Characteristic characteristic);
+	void											encodeVecValue(ST::Expression expression, ST::Characteristic characteristic);
 	void											encodeActions(std::vector<int> actions);
+	void											encodeActions(std::string actions);
 	Memory											Normalize();
 	float											dot();
 

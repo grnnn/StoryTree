@@ -10,7 +10,7 @@
 
 #include <stdexcept>
 
-namespace StoryTree
+namespace ST
 {
 	StoryTree::StoryTree(){
 		mySDB = new SDB();

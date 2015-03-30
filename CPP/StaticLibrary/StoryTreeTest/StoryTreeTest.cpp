@@ -21,9 +21,9 @@ int _tmain(int argc, _TCHAR* argv[])
 	types.push_back(s1);
 	types.push_back(s2);
 
-	StoryTree::SDBClass myClass(name, types, 5, 0, 10);
+	ST::SDBClass myClass(name, types, 5, 0, 10);
 	
-	StoryTree::StoryTree* myStoryTree = new StoryTree::StoryTree();
+	ST::StoryTree* myStoryTree = new ST::StoryTree();
 
 	system("pause");
 

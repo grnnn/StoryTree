@@ -132,7 +132,7 @@ Memory.prototype.encodeVecValue = function(expression, characteristic){
 	} else {
 		//Depending on the operator, get the amount of change happening
 		var oldval = characteristic.value;
-		var changeVal = Math.abs(expression.value);
+		var changeVal = expression.value;
 		var actualChange = 0;
 		switch(expression.operation){
 			case "+":
