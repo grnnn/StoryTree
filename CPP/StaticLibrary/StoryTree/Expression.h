@@ -17,11 +17,16 @@ namespace ST{
 		~Expression();
 
 		bool						boolean();
-
 		int							getIntValue();
 		bool						getBoolValue();
-
 		std::string					getVecKey();
+		std::string					getOperation();
+
+		bool						boolean() const;
+		int							getIntValue() const;
+		bool						getBoolValue() const;
+		std::string					getVecKey() const;
+		std::string					getOperation() const;
 
 	private:
 		std::string					charater;

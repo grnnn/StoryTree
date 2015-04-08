@@ -60,4 +60,28 @@ namespace ST{
 		return (this->intValue);
 	}
 
+	bool Expression::boolean() const{
+		return (this->isBoolean);
+	}
+
+	std::string Expression::getVecKey() const{
+		std::string key = this->charater + ":" + this->cls + ":" + this->type;
+		return key;
+	}
+
+	bool Expression::getBoolValue() const{
+		return (this->boolValue);
+	}
+
+	int Expression::getIntValue() const{
+		return (this->intValue);
+	}
+
+	std::string Expression::getOperation(){
+		return (this->operation);
+	}
+
+	std::string Expression::getOperation() const{
+		return (this->operation);
+	}
 }

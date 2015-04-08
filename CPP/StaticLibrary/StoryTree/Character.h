@@ -19,14 +19,14 @@ public:
 
 	std::string																getName();
 
-	void																	addCharacteristic(StoryTree::Characteristic characteristic);
+	void																	addCharacteristic(const ST::Characteristic& characteristic);
 	void																	parseExpression(std::string cls, std::string type, std::string operation, int value);
 	void																	parseExpression(std::string cls, std::string type, std::string operation, bool value);
 
 private:
 	std::string																						name;
 
-	std::unordered_map<std::string, std::unordered_map<std::string, StoryTree::Characteristic>>		characteristics;
+	std::unordered_map<std::string, std::unordered_map<std::string, ST::Characteristic>>		characteristics;
 
 	MemoryBank																						memoryBank;
 };

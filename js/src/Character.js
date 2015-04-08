@@ -137,14 +137,14 @@ Memory.prototype.encodeVecValue = function(expression, characteristic){
 		switch(expression.operation){
 			case "+":
 				if(oldval + changeVal > characteristic.max){
-					actualChange = characteristic.max - changeVal;
+					actualChange = characteristic.max - oldval;
 				} else {
 					actualChange = changeVal;
 				}
 				break;
 			case "-":
 				if(oldval - changeVal < characteristic.min){
-					actualChange = characteristic.max - changeVal;
+					actualChange = oldval - characteristic.min;
 				} else {
 					actualChange = changeVal;
 				}

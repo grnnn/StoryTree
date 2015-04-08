@@ -61,6 +61,8 @@ namespace ST{
 		}
 	}
 
+
+	//Getter functions, with const overloads
 	std::string Characteristic::getClass(){
 		return (this->cls);
 	}
@@ -81,9 +83,74 @@ namespace ST{
 		return (this->intValue);
 	}
 
-	bool Characteristic::getBoolValue(){
+	bool Characteristic::getBoolValue() const{
 		return (this->boolValue);
 	}
+
+	std::string Characteristic::getClass() const{
+		return (this->cls);
+	}
+
+	std::string Characteristic::getType() const{
+		return (this->type);
+	}
+
+	std::string Characteristic::getCharacter() const{
+		return (this->character);
+	}
+
+	bool Characteristic::boolean() const{
+		return (this->isBoolean);
+	}
+
+	int Characteristic::getIntValue() const{
+		return (this->intValue);
+	}
+
+	bool Characteristic::getBoolValue() const{
+		return (this->boolValue);
+	}
+
+	int Characteristic::getMin(){
+		if (this->isBoolean){
+			std::cout << "Characteristic.getMin() error: the characteristic you're trying to access of type boolean, which doesn't have a min." << std::endl;
+			exit(-1);
+		}
+		else {
+			return (this->min);
+		}
+	}
+
+	int Characteristic::getMax(){
+		if (this->isBoolean){
+			std::cout << "Characteristic.getMin() error: the characteristic you're trying to access of type boolean, which doesn't have a max." << std::endl;
+			exit(-1);
+		}
+		else {
+			return (this->max);
+		}
+	}
+
+	int Characteristic::getMin() const{
+		if (this->isBoolean){
+			std::cout << "Characteristic.getMin() error: the characteristic you're trying to access of type boolean, which doesn't have a min." << std::endl;
+			exit(-1);
+		}
+		else {
+			return (this->min);
+		}
+	}
+
+	int Characteristic::getMax() const{
+		if (this->isBoolean){
+			std::cout << "Characteristic.getMin() error: the characteristic you're trying to access of type boolean, which doesn't have a max." << std::endl;
+			exit(-1);
+		}
+		else {
+			return (this->max);
+		}
+	}
+
 
 	//private functions
 	void Characteristic::addValue(int value){

@@ -25,8 +25,18 @@ namespace ST{
 		int						getIntValue();
 		bool					getBoolValue();
 		bool					boolean();
-
 		std::string				getCharacter();
+		int						getMin();
+		int						getMax();
+
+		std::string				getClass() const;
+		std::string				getType() const;
+		int						getIntValue() const;
+		bool					getBoolValue()const;
+		bool					boolean() const;
+		std::string				getCharacter() const;
+		int						getMin() const;
+		int						getMax() const;
 
 	private:
 		std::string				character;

@@ -20,7 +20,7 @@ std::string Character::getName(){
 	return this->name;
 }
 
-void Character::addCharacteristic(StoryTree::Characteristic characteristic){
+void Character::addCharacteristic(const ST::Characteristic& characteristic){
 	this->characteristics[characteristic.getClass()][characteristic.getType()] = characteristic;
 }
 

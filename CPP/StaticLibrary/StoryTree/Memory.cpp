@@ -7,16 +7,22 @@ Memory::Memory()
 {
 }
 
+Memory::Memory(const Memory& mem)
+{
+	this->encodeActions(mem.getActionPath());
+
+	for (auto& keyIt : mem.getMemVec() ){
+		this->encodeVecValue(keyIt.first, keyIt.second);
+	}
+}
 
 Memory::~Memory()
 {
 }
 
-Memory Memory::copy(){
 
-}
 
-void Memory::encodeVecValue(ST::Expression expression, ST::Characteristic characteristic){
+void Memory::encodeVecValue(const ST::Expression& expression, const ST::Characteristic& characteristic){
 	std::string key = expression.getVecKey();
 
 	float val = 0;
@@ -24,6 +30,7 @@ void Memory::encodeVecValue(ST::Expression expression, ST::Characteristic charac
 		val = this->memVec.find(key)->second;
 	}
 
+	//The spaghetti is real
 	if (characteristic.boolean()){
 		if (expression.getBoolValue() == characteristic.getBoolValue()){
 			return;
@@ -36,12 +43,38 @@ void Memory::encodeVecValue(ST::Expression expression, ST::Characteristic charac
 		int oldval = characteristic.getIntValue();
 		int changeval = expression.getIntValue();
 		int actualChange = 0;
-		//TODO implement if-else for operations to calculate actualChange
+		if (expression.getOperation() == "+"){
+			if (oldval + changeval > characteristic.getMax()){
+				actualChange = characteristic.getMax() - oldval;
+			}
+			else {
+				actualChange = changeval;
+			}
+		}
+		else if (expression.getOperation() == "-"){
+			if (oldval - changeval < characteristic.getMin()){
+				actualChange = oldval - characteristic.getMin();
+			}
+			else {
+				actualChange = changeval;
+			}
+		}
+		else if (expression.getOperation() == "="){
+			actualChange = std::abs(oldval - changeval);
+		}
 
-		//TODO attribute actualChange to to value
+		float percentChange = actualChange / (characteristic.getMax() - characteristic.getMin());
+
+		val += percentChange;
 	}
 
-	//TODO Actually encode the vector value in the map
+	this->memVec[key] = val;
+
+	this->dimensionalLength += val * val;
+}
+
+void Memory::encodeVecValue(std::string key, float value){
+	this->memVec[key] = value;
 }
 
 void Memory::encodeActions(std::vector<int> actions){
@@ -62,9 +95,55 @@ void Memory::encodeActions(std::string actions){
 
 
 Memory Memory::Normalize(){
+	Memory* newMem = new Memory();
+	(*newMem).encodeActions(this->actionPath);
 
+	float length = this->getLength();
+
+	for (auto& it : this->memVec){
+		float normVal = it.second / length;
+		(*newMem).encodeVecValue(it.first, normVal);
+	}
+
+	return (*newMem);
 }
 
-float Memory::dot(){
+float Memory::dot(const Memory& mem){
+	const Memory* shorter;
+	const Memory* longer;
 
+	if (this->memVec.size() > mem.getMemVec().size()){
+		shorter = this;
+		longer = &mem;
+	}
+	else {
+		shorter = &mem;
+		longer = this;
+	}
+
+	//TODO implement the actual dot product-ing
+}
+
+std::map<std::string, float> Memory::getMemVec(){
+	return (this->memVec);
+}
+
+std::string Memory::getActionPath(){
+	return (this->actionPath);
+}
+
+float Memory::getLength(){
+	return std::sqrt(this->dimensionalLength);
+}
+
+std::map<std::string, float> Memory::getMemVec() const{
+	return (this->memVec);
+}
+
+std::string Memory::getActionPath() const{
+	return (this->actionPath);
+}
+
+float Memory::getLength() const{
+	return std::sqrt(this->dimensionalLength);
 }
