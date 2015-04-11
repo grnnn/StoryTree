@@ -121,7 +121,40 @@ float Memory::dot(const Memory& mem){
 		longer = this;
 	}
 
-	//TODO implement the actual dot product-ing
+	float dotProduct = 0;
+	auto longVec = longer->getMemVec();
+	for (auto& it: shorter->getMemVec()){
+		float sVal = it.second;
+
+		float lVal = 0;
+		if (longVec.find(it.first) != longVec.end()){
+			lVal = longVec.find(it.first)->second;
+		}
+
+		dotProduct += sVal * lVal;
+	}
+
+	return dotProduct;
+
+}
+
+Memory Memory::combine(const Memory& mem1, const Memory& mem2){
+	Memory* newMem = new Memory();
+	for (auto& it : mem1.getMemVec()){
+		(*newMem).encodeVecValue(it.first, it.second);
+	}
+
+	for (auto& it2 : mem2.getMemVec()){
+		auto otherIt = mem1.getMemVec().find(it2.first);
+		if ( otherIt != mem1.getMemVec().end()){
+			(*newMem).encodeVecValue(it2.first, otherIt->second + it2.second);
+		}
+		else {
+			(*newMem).encodeVecValue(it2.first, it2.second);
+		}
+	}
+
+	return (*newMem);
 }
 
 std::map<std::string, float> Memory::getMemVec(){

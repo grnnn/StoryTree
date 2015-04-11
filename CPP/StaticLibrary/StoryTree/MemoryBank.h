@@ -14,7 +14,7 @@ public:
 	MemoryBank();
 	~MemoryBank();
 
-	void						addMemory(Memory memory);
+	void						addMemory(const Memory& memory);
 
 private:
 	int							timeStep = 0;

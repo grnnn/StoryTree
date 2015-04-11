@@ -27,6 +27,8 @@ namespace ST{
 
 		std::string								getName();
 		std::string*						    getTypes();
+		std::string								getName() const;
+		std::string*						    getTypes() const;
 
 	private:
 		std::string								name;

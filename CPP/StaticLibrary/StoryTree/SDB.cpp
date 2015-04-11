@@ -10,7 +10,7 @@ SDB::SDB(){
 SDB::~SDB(){
 }
 
-void SDB::addClass(ST::SDBClass cls){
+void SDB::addClass(const ST::SDBClass& cls){
 	this->classes[cls.getName()] = cls;
 }
 

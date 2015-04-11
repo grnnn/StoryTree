@@ -140,4 +140,16 @@ namespace ST{
 		return tehTypes;
 	}
 
+	std::string SDBClass::getName() const{
+		return this->name;
+	}
+
+	std::string* SDBClass::getTypes() const{
+		std::string* tehTypes = new std::string[this->types.size()];
+		int count = 0;
+		for (auto it = this->types.begin(); it != this->types.end(); ++it){
+			tehTypes[count] = (it)->first;
+		}
+		return tehTypes;
+	}
 }

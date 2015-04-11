@@ -27,6 +27,7 @@ public:
 	void											encodeActions(std::string actions);
 	Memory											Normalize();
 	float											dot(const Memory& mem);
+	static Memory									combine(const Memory& mem1, const Memory& mem2);
 
 	std::map<std::string, float>					getMemVec();
 	std::string										getActionPath();
