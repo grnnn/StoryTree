@@ -1,7 +1,7 @@
 <html>
 	<head>
 		<title> StoryTree Test </title>
-		
+
 
 		<button id="trishActions">Get Trish's actions</button>
 		<p id="actions"></p>
@@ -16,13 +16,16 @@
 		<script src="src/STree.js"></script>
 		<script src="src/StoryTree.js"></script>
 
+		<script src="src/Extensions/Dialogue.js"></script>
+
 		<!--<script src="build/StoryTree.js"></script>-->
 
 		<script>
 		var storyTree = new StoryTree();
 		storyTree.setSDB("res/SDB.json");
 		storyTree.setCharacters("res/characters.json");
-		storyTree.setTrees("res/StoryTrees/");
+		storyTree.setCharacteristics("res/characteristics.json");
+		storyTree.setActions("Trish", "res/StoryTrees/Trish.json");
 
 		document.getElementById("trishActions").addEventListener("click", function(){
 			if(storyTree.isLoaded()){
@@ -39,8 +42,8 @@
 		});
 
 		document.getElementById("doAction").addEventListener("click", function(){
-			var options = storyTree.getOptions("Trish", 3);	
-			storyTree.executeAction("Trish", options[1]);			
+			var options = storyTree.getOptions("Trish", 3);
+			storyTree.executeAction("Trish", options[1]);
 		});
 		</script>
 

@@ -1,0 +1,22 @@
+﻿Build started 4/11/2015 2:13:03 PM.
+     1>Project "C:\Users\towenmil\Documents\StoryTree\CPP\StaticLibrary\StoryTree\StoryTree.vcxproj" on node 2 (Build target(s)).
+     1>ClCompile:
+         C:\Program Files (x86)\Microsoft Visual Studio 12.0\VC\bin\CL.exe /c /ZI /nologo /W3 /WX- /sdl /Od /Oy- /D WIN32 /D _DEBUG /D _LIB /D _UNICODE /D UNICODE /Gm /EHsc /RTC1 /MDd /GS /fp:precise /Zc:wchar_t /Zc:forScope /Yu"stdafx.h" /Fp"Debug\StoryTree.pch" /Fo"Debug\\" /Fd"Debug\vc120.pdb" /Gd /TP /analyze- /errorReport:prompt Characteristic.cpp
+         Characteristic.cpp
+       Lib:
+         C:\Program Files (x86)\Microsoft Visual Studio 12.0\VC\bin\Lib.exe /OUT:"C:\Users\towenmil\Documents\StoryTree\CPP\StaticLibrary\Debug\StoryTree.lib" /NOLOGO Debug\Character.obj
+         Debug\CharacterDB.obj
+         Debug\Characteristic.obj
+         Debug\Expression.obj
+         Debug\Memory.obj
+         Debug\MemoryBank.obj
+         Debug\SDB.obj
+         Debug\SDBClass.obj
+         Debug\stdafx.obj
+         Debug\StoryTreeLib.obj
+         StoryTree.vcxproj -> C:\Users\towenmil\Documents\StoryTree\CPP\StaticLibrary\Debug\StoryTree.lib
+     1>Done Building Project "C:\Users\towenmil\Documents\StoryTree\CPP\StaticLibrary\StoryTree\StoryTree.vcxproj" (Build target(s)).
+
+Build succeeded.
+
+Time Elapsed 00:00:00.80

@@ -17,12 +17,12 @@
 	"class" : "owns",
 	"types" : ["cookie", "computer", "house"],
 	"isBoolean" : true,
-	"defaultVal" : true
+	"defaultVal" : false
 },
 {
 	"class" : "location",
 	"types" : ["underwater", "volcano"],
 	"isBoolean" : true,
-	"defaultVal" : true
+	"defaultVal" : false
 }
 ]
