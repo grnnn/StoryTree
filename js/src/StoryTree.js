@@ -251,7 +251,7 @@ StoryTree.prototype.setTrees = function(path){
 		  console.log("Unable to parse character Speak Tree from this path: " + newPath);
 		  that.loadingTree = false;
 		};
-
+		console.log(myChar);
 		request.send();
 	}
 };
