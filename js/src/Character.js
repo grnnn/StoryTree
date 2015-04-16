@@ -81,6 +81,30 @@ var Memory = function(){
 	this.actionPath = "";
 }
 
+//Memory.combine()
+//Static function, combines 2 memory instances, adding their values together, and returns the combined Memory
+//ARGUMENTS:
+//	mem1(Memory) - Memory to combine
+//  mem2(Memory) - Memory to combine
+//  timeStep(int) - timstep so we know how much weight to give to new memories
+//RETURN Memory
+Memory.prototype.combine = function(mem1, mem2, timeStep){
+	//Copy the first memory vector
+	var ret = mem1.copy();
+
+	//Loop through the second add either add to the existing value or create a value
+	for(var key in mem2.memVec){
+		if(ret.memVec[key] != undefined){
+			ret.memVec[key] = ret.memVec[key] + mem2.memVec[key] + 0.1*timeStep;
+		} else {
+			ret.memVec[key] = mem2.memVec[key] + 0.1*timeStep;
+		}
+	}
+
+	//return the composed vector
+	return ret;
+}
+
 //Memory.copy()
 //Copies a memory instance and returns a new one
 //ARGUMENTS void

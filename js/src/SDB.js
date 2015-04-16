@@ -90,6 +90,10 @@ SDB.prototype.doesContain = function(cls, type){
 		return false;
 	}
 
+	if(type == undefined){
+		return true;
+	}
+
 	var clstype = sdbcls.types[type];
 	if(clstype == undefined){
 		return false;

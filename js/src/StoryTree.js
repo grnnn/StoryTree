@@ -18,6 +18,8 @@ var StoryTree = function(){
 	this.loadingCharacters = false;
 	this.loadingCharacteristics = false;
 	this.loadingActions = false;
+	this.loadingPreconditions = false;
+	this.loadingExpressions = false;
 
 	this.badFormatting = false;
 
@@ -403,7 +405,94 @@ StoryTree.prototype.setActions = function(character, info){
 //	info({} or path) - the file path to the local json file representing the preconditions or an object literal representing the preconditions
 //RETURN void
 StoryTree.prototype.setPreconditions = function(character, id, info){
-	//TODO implement function
+	//Check for bad formatting first
+	if(this.badFormatting) return;
+
+	//For scoping when loading JSON
+	var that = this;
+
+	//First check to see if character's tree has been loaded
+	//We're loading JSON asynchronously, so it is a bit wonky with the timing
+	if(this.characterDB.getCharacter(character).tree.isEmpty()){
+		var setT = function(){that.setPreconditions(character, id, info);};
+		//reload function every 100 milliseconds
+		window.setTimeout(setT, 100);
+		return;
+	}
+
+	//Mark that we're loading preconditions
+	this.loadingPreconditions = true;
+
+	//The actual function that loads preconditions
+	//ARGUMENTS:
+	//	data({}) - the object representing the precondition
+	function setMyPreconditions(data){
+		//If the JSON data isn't in an array, put it in one
+		if(Object.prototype.toString.call( data ) !== '[object Array]'){
+			data = [data];
+		}
+
+		//First retrieve the character we need, abort if it doesn't exist
+		var char = that.characterDB.getCharacter(character);
+		if(char == undefined){
+			alert("setPreconditions() error: the character " + character + " does not exist.");
+			return;
+		}
+
+		//Next get the action we need for that character
+		var action = char.tree.actions[id];
+		if(action == undefined){
+			alert("setPreconditions() error: the action with the uid " + id + "for the character " + character + "does not exist.");
+			return;
+		}
+
+		//Now loop through each precondition
+		for(var i = 0; i < data.length; i++){
+			var pre = data[i];
+
+			//Check the formatting of the precondition before anything else
+			var preString = Precondition.prototype.checkPrecondition(pre.character, pre.class, pre.type, pre.operation, pre.value);
+			if(preString !== ""){
+				alert(preString);
+				that.badFormatting = true;
+				return;
+			}
+
+			//Now we can finally assign the precondition to the action
+			action.addPrecondition(pre.character, pre.class, pre.type, pre.operation, pre.value);
+
+		}
+
+		//Now we're done loading preconditions ;)
+		that.loadingPreconditions = false;
+
+	}
+
+	//Now check for formatting of info
+	if(typeof info === "string"){
+		//If it's a string, we can assume JSON
+		var request = new XMLHttpRequest();
+		request.open('GET', info, true);
+		//Listener for parsing the JSON info
+		request.onload = function() {
+		  if (this.status >= 200 && this.status < 400) {
+				// Success!
+		    var data = JSON.parse(this.responseText);
+				setMyPreconditions(data);
+			}
+		};
+		//Listener for error in parsing
+		request.onerror = function() {
+		  console.log("Unable to parse Preconditions from this path: " + info);
+		  that.loadingPreconditions = false;
+		};
+
+		request.send();
+	}
+	//Else, we can assume literal, and just start parsing it as per usual
+	else {
+		setMyPreconditions(info)
+	}
 };
 
 //StoryTree.setExpressions(character, id, info)
@@ -414,7 +503,94 @@ StoryTree.prototype.setPreconditions = function(character, id, info){
 //	info({} or path) - the file path to the local json file representing the expressions or an object literal representing the expressions
 //RETURN void
 StoryTree.prototype.setExpressions = function(character, id, info){
-	//TODO implement function
+		//Check for bad formatting first
+	if(this.badFormatting) return;
+
+	//For scoping when loading JSON
+	var that = this;
+
+	//First check to see if character's tree has been loaded
+	//We're loading JSON asynchronously, so it is a bit wonky with the timing
+	if(this.characterDB.getCharacter(character).tree.isEmpty()){
+		var setT = function(){that.setExpressions(character, id, info);};
+		//reload function every 100 milliseconds
+		window.setTimeout(setT, 100);
+		return;
+	}
+
+	//Mark that we're loading expressions
+	this.loadingExpressions = true;
+
+	//The actual function that loads expressions
+	//ARGUMENTS:
+	//	data({}) - the object representing the expressions
+	function setMyExpressions(data){
+		//If the JSON data isn't in an array, put it in one
+		if(Object.prototype.toString.call( data ) !== '[object Array]'){
+			data = [data];
+		}
+
+		//First retrieve the character we need, abort if it doesn't exist
+		var char = that.characterDB.getCharacter(character);
+		if(char == undefined){
+			alert("setExpressions() error: the character " + character + " does not exist.");
+			return;
+		}
+
+		//Next get the action we need for that character
+		var action = char.tree.actions[id];
+		if(action == undefined){
+			alert("setExpressions() error: the action with the uid " + id + "for the character " + character + "does not exist.");
+			return;
+		}
+
+		//Now loop through each precondition
+		for(var i = 0; i < data.length; i++){
+			var exp = data[i];
+
+			//Check the formatting of the expression before anything else
+			var expString = Expression.prototype.checkExpression(exp.character, exp.class, exp.type, exp.operation, exp.value);
+			if(expString !== ""){
+				alert(expString);
+				that.badFormatting = true;
+				return;
+			}
+
+			//Now we can finally assign the expression to the action
+			action.addExpression(exp.character, exp.class, exp.type, exp.operation, exp.value);
+
+		}
+
+		//Now we're done loading expressions ;)
+		that.loadingExpressions = false;
+
+	}
+
+	//Now check for formatting of info
+	if(typeof info === "string"){
+		//If it's a string, we can assume JSON
+		var request = new XMLHttpRequest();
+		request.open('GET', info, true);
+		//Listener for parsing the JSON info
+		request.onload = function() {
+		  if (this.status >= 200 && this.status < 400) {
+				// Success!
+		    var data = JSON.parse(this.responseText);
+				setMyExpressions(data);
+			}
+		};
+		//Listener for error in parsing
+		request.onerror = function() {
+		  console.log("Unable to parse Expressions from this path: " + info);
+		  that.loadingExpressions = false;
+		};
+
+		request.send();
+	}
+	//Else, we can assume literal, and just start parsing it as per usual
+	else {
+		setMyExpressions(info)
+	}
 };
 
 //StoryTree.set(thing, arg1, arg2, arg3, arg4)
@@ -453,13 +629,342 @@ StoryTree.prototype.set = function(thing, arg1, arg2, arg3){
 			this.setActions(arg1, arg2);
 			break;
 		case "precondition":
-			//this.setPreconditions(arg1, arg2, arg3);
+			this.setPreconditions(arg1, arg2, arg3);
 			break;
 		case "expression":
-			//this.setExpressions(arg1, arg2, arg3);
+			this.setExpressions(arg1, arg2, arg3);
 			break;
-		defualt:
+		default:
 			alert("set() error: argument one is not a recognized type of addable information.");
+			break;
+	}
+};
+
+//StoryTree.remove(cls, type)
+//Removes a value from the SDB
+//As a result, will also remove all characteristics, preconditions, and expressions involving the value
+//ARGUMENTS:
+//	cls(string) - the class of the value to be removed
+//	type(string or undefined) - the type, or lack thereof, that expresses the SDB value. If undefined, remove the class entirely.
+//RETURN void
+StoryTree.prototype.removeSDB = function(cls, type){
+	//check to see if we're still loading JSON
+	if(!this.isLoaded()){
+		var l = function(){that.removeSDB(cls, type)};
+		console.log("Wait 500 ms for the JSONs to load....");
+		window.setTimeout(l, 500);
+		return;
+	}
+
+	//First check if the user specifies a specific type, if not, then we assume to remove all values of that class
+	var all = false;
+	if(type == undefined){
+		all = true;
+	}
+
+	//Next, check the formatting of the arguments
+	if(typeof cls !== "string"){
+		alert("StoryTree.removeSDB() Error: Your class value of " + cls + "is not of type string.");
+		return;
+	}
+	if(typeof type !== "string" && type != undefined){
+		alert("StoryTree.removeSDB() Error: Your type value of " + type + "is not of type string.");
+		return;
+	}
+
+	//Last of all, check if the SDB value exists
+	if(!this.SDB.doesContain(cls, type)){
+		if(type == undefined){
+			console.log("StoryTree.removeSDB() Warning: The class " + cls + " and type " + type + " isn't a valid SDB value.");
+		} else {
+			Console.log("StoryTree.removeSDB() Warning: The class " + cls + " isn't a valid SDB value.");
+		}
+		return;
+	}
+
+	//Now we can actually do the deleting
+	//that #spaghettilyfe
+	if(all){
+		//First, delete the entry in the SDB
+		delete this.SDB.SDBClasses[cls];
+
+		//Iterate through all characters
+		for(var name in this.characterDB.characters){
+			var character = this.characterDB.characters[name];
+
+			//Now find the associated characteristic and delete it, can delete undefined characteristics
+			delete character.characteristics[cls];
+
+			//Now loop through each action to get to the preconditions and expressions
+			for(var uid in character.tree.actions){
+				var action = character.tree.actions[uid];
+
+				//Loop through the preconditions
+				for(var i = 0; i < action.preconditions.length; i++){
+					var pre = action.preconditions[i];
+
+					if(pre.cls === cls){
+						action.preconditions.splice(i, 1);
+					}
+				}
+
+				//Loop through the expressions
+				for(var j = 0; j < action.expressions.length; j++){
+					var exp = action.expressions[j];
+
+					if(exp.cls === cls){
+						action.expressions.splice(j, 1);
+					}
+				}
+			}
+
+		}
+	} else {
+		//First, delete the entry in the SDB
+		var SDBClass = this.SDB.SDBClasses[cls];
+		delete SDBClass[type]; 
+
+		//Iterate through all characters
+		for(var name in this.characterDB.characters){
+			var character = this.characterDB.characters[name];
+
+			//Now find the associated characteristic and delete it, can delete undefined characteristics
+			delete character.characteristics[cls][type];
+
+			//Now loop through each action to get to the preconditions and expressions
+			for(var uid in character.tree.actions){
+				var action = character.tree.actions[uid];
+
+				//Loop through the preconditions
+				for(var i = 0; i < action.preconditions.length; i++){
+					var pre = action.preconditions[i];
+
+					if(pre.cls === cls && pre.type === type){
+						action.preconditions.splice(i, 1);
+					}
+				}
+
+				//Loop through the expressions
+				for(var j = 0; j < action.expressions.length; j++){
+					var exp = action.expressions[j];
+
+					if(exp.cls === cls && exp.type === type){
+						action.expressions.splice(j, 1);
+					}
+				}
+			}
+
+		}
+
+	}	
+};
+
+//StoryTree.removeCharacter(name)
+//Remove the specified character from the storyTree instance
+//ARGUMENTS:
+//	name(String) - character name
+//RETURN void
+StoryTree.prototype.removeCharacter = function(name){
+	//check to see if we're still loading JSON
+	if(!this.isLoaded()){
+		var l = function(){that.removeCharacter(name)};
+		console.log("Wait 500 ms for the JSONs to load....");
+		window.setTimeout(l, 500);
+		return;
+	}
+
+	//Next, check the formatting of the argument
+	if(typeof name !== "string"){
+		alert("StoryTree.removeCharacter() Error: The argument " + name + "is not of type string.");
+		return;
+	}
+
+	//Last of all, check if the character exists
+	if(this.characterDB.getCharacter(name) == undefined){
+		console.log("StoryTree.removeCharacter() Warning: The character " + name + " doesn't exist.");
+		return;
+	}
+
+	//Now for the actual deleting
+	delete this.characterDB.characters[name];
+}
+
+//StoryTree.removeCharacteristic(name, cls, type)
+//Remove a specified characteristic
+//ARGUMENTS:
+//	name(string) - the name of the character
+//	cls(string or undefined) - the class of the characteristic, if undefined, remove all characteristics
+//	type(string or undefined) - the type of the characteristic, if undefined, remove all characteristics of a certain class
+//RETURN void
+StoryTree.prototype.removeCharacteristic = function(name, cls, type){
+	//check to see if we're still loading JSON
+	if(!this.isLoaded()){
+		var l = function(){that.removeCharacteristic(name, cls, type)};
+		console.log("Wait 500 ms for the JSONs to load....");
+		window.setTimeout(l, 500);
+		return;
+	}
+
+	//Next, check the formatting of the arguments
+	if(typeof name !== "string"){
+		alert("StoryTree.removeCharacteristic() Error: The argument " + name + "is not of type string.");
+		return;
+	}
+	if(typeof cls !== "string" && cls != undefined){
+		alert("StoryTree.removeCharacteristic() Error: The argument " + cls + "is not of type string.");
+		return;
+	}
+	if(typeof type !== "string" && type != undefined){
+		alert("StoryTree.removeCharacteristic() Error: The argument " + type + "is not of type string.");
+		return;
+	}
+
+	//Check if the character exists
+	if(this.characterDB.getCharacter(name) == undefined){
+		console.log("StoryTree.removeCharacteristic() Warning: The character " + name + " doesn't exist.");
+		return;
+	}
+	//Check if there's are any characteristics of that class
+	if(this.characterDB.getCharacter(name).characteristics[cls] == undefined && cls != undefined){
+		console.log("StoryTree.removeCharacteristic() Warning: There is no characteristic value with the class " + cls + " for the character " + name + ".");
+		return;
+	}
+	//Check if there's a characteristic of that cls and type
+	if(this.characterDB.getCharacter(name).characteristics[cls][type] == undefined && cls != undefined && type != undefined){
+		console.log("StoryTree.removeCharacteristic() Warning: There is no characteristic value with the class " + cls + " and the type " + type + " for the character " + name + ".");
+		return;
+	}
+
+	//Now we move on to actually deleting the stuff
+	//State 1: cls is defined, type is defined
+	if(cls != undefined && type != undefined){
+		delete this.characterDB.getCharacter(name).characteristics[cls][type];
+		return;
+	}
+	//State 2: cls is defined
+	if(cls != undefined){
+		delete this.characterDB.getCharacter(name).characteristics[cls];
+		return;
+	}
+	//State 3: the name of the character is defined
+	for(var myCls in this.characterDB.getCharacter(name).characteristics){
+		delete this.characterDB.getCharacter(name).characteristics[myCls];
+	}
+};
+
+//StoryTree.removeAction(name, uid)
+//Remove a specified action from a character, or remove all actions
+//ARGUMENTS:
+//	name(string) - the name of the character
+//	uid(int or undefined) - the uid of the action you want to remove, if undefined, remove all actions
+//RETURN void
+StoryTree.prototype.removeAction = function(name, uid){
+	//check to see if we're still loading JSON
+	if(!this.isLoaded()){
+		var l = function(){that.removeAction(name, uid)};
+		console.log("Wait 500 ms for the JSONs to load....");
+		window.setTimeout(l, 500);
+		return;
+	}
+
+	//Next, check the formatting of the arguments
+	if(typeof name !== "string"){
+		alert("StoryTree.removeAction() Error: The argument " + name + "is not of type string.");
+		return;
+	}
+	if(typeof uid !== "number" && uid != undefined){
+		alert("StoryTree.removeAction() Error: The argument " + uid + "is not of type int.");
+		return;
+	}
+
+	//Check if the character exists
+	if(this.characterDB.getCharacter(name) == undefined){
+		console.log("StoryTree.removeAction() Warning: The character " + name + " doesn't exist.");
+		return;
+	}
+	//Check if there's an action with the uid
+	if(this.characterDB.getCharacter(name).tree.actions[uid] == undefined && uid != undefined){
+		console.log("StoryTree.removeAction() Warning: There is no action with the uid " + uid + " for the character " + name + ".");
+		return;
+	}
+
+	//Now we actually delete the things
+	//State 1: uid is defined
+	if(uid != undefined){
+		delete this.characterDB.getCharacter(name).tree.actions[uid];
+		return;
+	}
+	//State 2: uid is not defined
+	for(var myUID in this.characterDB.getCharacter(name).tree.actions){
+		delete this.characterDB.getCharacter(name).tree.actions[myUID];
+	}
+};
+
+//StoryTree.removePrecondition(name, cls, type)
+//Remove a specified precondition from a character, or remove some variation
+//ARGUMENTS:
+//	name(string) - the name of the character
+//	cls(string or undefined) - the class of the precondition you want to remove, if undefined, remove all preconditions
+//	type(string or undefined) - the type of the precondition you want to remove, if undefined, remove all of the specified class
+//RETURN void
+StoryTree.prototype.removePrecondition = function(name, cls, type){
+	//TODO Implement function
+}
+
+//StoryTree.removeExpression(name, cls, type)
+//Remove a specified expression from a character, or remove some variation
+//ARGUMENTS:
+//	name(string) - the name of the character
+//	cls(string or undefined) - the class of the expression you want to remove, if undefined, remove all expressions
+//	type(string or undefined) - the type of the expression you want to remove, if undefined, remove all of the specified class
+//RETURN void
+StoryTree.prototype.removeExpression = function(name, cls, type){
+	//TODO Implement function
+}
+
+//StoryTree.remove(thing, arg1, arg2, arg3, arg4)
+//Removes a storytree thing, based on the string of thing
+//ARGUMENTS:
+//	thing(string) - "SDB", "character", "characteristic", "action", "precondition", or "expression"
+//	arg1(?) - depends on child function being called
+//	arg2(?) - depends on child function being called
+//	arg3(?) - depends on child function being called
+//RETURN void
+StoryTree.prototype.remove = function(thing, arg1, arg2, arg3){
+	//First check format of thing
+	if(typeof thing !== "string"){
+		alert("remove() error: the argument" + thing + " is not of type string.");
+		return;
+	}
+
+	//lowercase thing
+	thing = thing.toLowerCase();
+
+	//If an 's' is at the end of the thing, concatenate it off. (function can take plural or singular things)
+	if(thing.slice(-1) === "s") thing = thing.substring(0, thing.length - 1);
+
+	//Now call the appropriate, already existing function
+	switch(thing){
+		case "sdb":
+			this.removeSDB(arg1, arg2);
+			break;
+		case "character":
+			this.removeCharacter(arg1);
+			break;
+		case "characteristic":
+			this.removeCharacteristic(arg1, arg2, arg3);
+			break;
+		case "action":
+			this.removeAction(arg1, arg2);
+			break;
+		case "precondition":
+			//this.removePrecondition(arg1, arg2, arg3);
+			break;
+		case "expression":
+			//this.removeExpressions(arg1, arg2, arg3);
+			break;
+		default:
+			alert("remove() error: the argument" + thing + " is not a recognized type of removable information.");
 			break;
 	}
 };
@@ -653,10 +1158,11 @@ StoryTree.prototype.getOptions = function(character, numOfOptions){
 		if(actionObj.isLeaf()){
 			uids.push(uidPath);
 
-			//Normalize the hypothetical memory
-			var normMem = memory.normalize();
+			var combineMem = Memory.prototype.combine(myCharacter.memBank.totalMemVec, memory, myCharacter.memBank.timeStep);
+			var normMem = combineMem.normalize();
 			//Get the dot product
 			var dotproduct = normMem.dot(normalComposedMemory);
+			var dotproduct = Math.round(dotproduct * 1000) / 1000
 			//Get the dist to the conversation type
 			var dist = Math.abs(that.conversationType - dotproduct);
 
@@ -807,9 +1313,9 @@ StoryTree.prototype.getActionName = function(character, uid){
 //StoryTree.isLoaded()
 //Just a simple function to tell if it's been loaded
 //RETURN bool - have the JSONs been loaded
-/*StoryTree.prototype.isLoaded = function(){
-	return !(this.loadingSDB || this.loadingActions || this.loadingCharacters || this.loadingCharacteristics);
-}*/
+StoryTree.prototype.isLoaded = function(){
+	return !(this.loadingSDB || this.loadingActions || this.loadingCharacters || this.loadingCharacteristics || this.loadingPreconditions || this.loadingExpressions);
+}
 
 //StoryTree.executeAction()
 //Executes a given action for a given character

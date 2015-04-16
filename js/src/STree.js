@@ -356,6 +356,14 @@ STree.prototype.mapAction = function(name, uid){
 	this.actions[uid] = new Action(name, uid);
 }
 
+STree.prototype.isEmpty = function(){
+	var counter = 0;
+	for (var key in this.actions){
+		return false;
+	}
+	return true;
+}
+
 //Because action trees are created one action at a time, there are a thing that we should try to catch after it's built
 //We need to check if there are any infinite loops in the tree
 //ARGUMENTS: void

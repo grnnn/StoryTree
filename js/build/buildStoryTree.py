@@ -20,21 +20,25 @@ if __name__ == '__main__':
 	firstClosedBracketPassed = False
 	outputString = ""
 	for line in StoryTree.readlines():
+		line = line.replace("alert", "throw")
 		#This should only be triggered once
 		if toOtherFiles:
 
 			#read in sdblines
 			for sdbline in sdb.readlines():
+				sdbline = sdbline.replace("alert", "throw")
 				outputString = outputString + "\t" + sdbline
 			outputString = outputString + "\n\n"
 
 			#read in characterlines
 			for charline in character.readlines():
+				charline = charline.replace("alert", "throw")
 				outputString = outputString + "\t" + charline
 			outputString = outputString + "\n\n"
 
 			#read in Action tree lines
 			for aline in stree.readlines():
+				aline = aline.replace("alert", "throw")
 				outputString = outputString + "\t" + aline
 			outputString = outputString + "\n\n"
 
