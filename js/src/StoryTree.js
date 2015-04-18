@@ -900,26 +900,354 @@ StoryTree.prototype.removeAction = function(name, uid){
 	}
 };
 
-//StoryTree.removePrecondition(name, cls, type)
+//StoryTree.removePrecondition(name, uid, cls, type)
 //Remove a specified precondition from a character, or remove some variation
 //ARGUMENTS:
-//	name(string) - the name of the character
-//	cls(string or undefined) - the class of the precondition you want to remove, if undefined, remove all preconditions
-//	type(string or undefined) - the type of the precondition you want to remove, if undefined, remove all of the specified class
+//	name(string or undefined) - the name of the character, if undefined, remove preconditions for all characters, specified by other states
+//	uid(int or undefined) - the uid of the action you want to remove, if undefined, remove all preconditions for that character, unless class is specified, then remove all of the specified class
+//	cls(string or undefined) - the class of the precondition you want to remove, if undefined, remove all preconditions of the specified uid
+//	type(string or undefined) - the type of the precondition you want to remove, if undefined, remove all preconditions of the specified class
 //RETURN void
-StoryTree.prototype.removePrecondition = function(name, cls, type){
-	//TODO Implement function
+StoryTree.prototype.removePrecondition = function(name, uid, cls, type){
+	//check to see if we're still loading JSON
+	if(!this.isLoaded()){
+		var l = function(){that.removePrecondition(name, uid, cls, type)};
+		console.log("Wait 500 ms for the JSONs to load....");
+		window.setTimeout(l, 500);
+		return;
+	}
+
+	//Next, check the formatting of the arguments
+	if(typeof name !== "string" && name != undefined){
+		alert("StoryTree.removePrecondition() Error: The argument " + name + "is not of type string.");
+		return;
+	}
+	if(typeof name !== "number" && uid != undefined){
+		alert("StoryTree.removePrecondition() Error: The argument " + uid + "is not of type uid.");
+		return;
+	}
+	if(typeof cls !== "string" && cls != undefined){
+		alert("StoryTree.removePrecondition() Error: The argument " + cls + "is not of type string.");
+		return;
+	}
+	if(typeof type !== "string" && type != undefined){
+		alert("StoryTree.removePrecondition() Error: The argument " + type + "is not of type string.");
+		return;
+	}
+
+	//Check if the character exists
+	if(this.characterDB.getCharacter(name) == undefined && name != undefined){
+		console.log("StoryTree.removePrecondition() Warning: The character " + name + " doesn't exist.");
+		return;
+	}
+	//Check if the action exists
+	if(this.characterDB.getCharacter(name).tree.actions[uid] == undefined && uid != undefined){
+		console.log("StoryTree.removePrecondition() Warning: The uid " + uid + " does not exist for the character " + name);
+		return;
+	}
+
+	//If all undefined, throw an error
+	if(name == undefined && uid == undefined && cls == undefined && type == undefined){
+		alert("StoryTree.removePrecondition() Error: No arguments given.");
+		return;
+	}
+
+
+	//Valid states
+	//1: name
+	if(name != undefined && uid == undefined && cls == undefined && type == undefined){
+		//Delete all preconditions for each action for a character
+		for(var myUID in this.characterDB.getCharacter(name).tree.actions){
+			var action = this.characterDB.getCharacter(name).tree.actions[myUID];
+			action.preconditions = [];
+		}
+		return;
+	}
+	//2: name, uid
+	if(name != undefined && uid != undefined && cls == undefined && type == undefined){
+		//Delete all preconditions for specified action
+		this.characterDB.getCharacter(name).tree.actions[uid].preconditions = [];
+		return;
+	}
+	//3: name, cls
+	if(name != undefined && uid == undefined && cls != undefined && type == undefined){
+		//Delete all preconditions of a character with a specified class, in each action
+		for(var myUID in this.characterDB.getCharacter(name).tree.actions){
+			var action = this.characterDB.getCharacter(name).tree.actions[myUID];
+
+			//Loop through preconditions
+			for(var i = action.preconditions.length; i > 0; i--){
+				var pre = action.preconditions[i-1];
+
+				if(pre.cls === cls){
+					actions.preconditions.splice(i-1, 1);
+				}
+			}
+		}
+	}
+	//4: name, cls, type
+	if(name != undefined && uid == undefined && cls != undefined && type != undefined){
+		//Delete all preconditions of a character with a specified class, in each action
+		for(var myUID in this.characterDB.getCharacter(name).tree.actions){
+			var action = this.characterDB.getCharacter(name).tree.actions[myUID];
+
+			//Loop through preconditions
+			for(var i = action.preconditions.length; i > 0; i--){
+				var pre = action.preconditions[i-1];
+
+				if(pre.cls === cls && pre.type === type){
+					actions.preconditions.splice(i-1, 1);
+				}
+			}
+		}
+		return;
+	}
+	//5: name, uid, cls
+	if(name != undefined && uid != undefined && cls != undefined && type == undefined){
+		//Delete all preconditions of a character, for a specific action and class
+		var pres = this.characterDB.getCharacter(name).tree.actions[uid].preconditions;
+		for(var i = pres.length; i > 0; i--){
+			var pre = action.preconditions[i-1];
+
+			if(pre.cls === cls){
+				pres.splice(i-1, 1);
+			}
+		}
+		return;
+	}
+	//6: name, uid, cls, type
+	if(name != undefined && uid != undefined && cls != undefined && type != undefined){
+		//Delete all preconditions of a character, for a specific action and class
+		var pres = this.characterDB.getCharacter(name).tree.actions[uid].preconditions;
+		for(var i = pres.length; i > 0; i--){
+			var pre = action.preconditions[i-1];
+
+			if(pre.cls === cls && pre.type === type){
+				pres.splice(i-1, 1);
+			}
+		}
+		return;
+	}
+	//7: cls
+	if(name == undefined && uid == undefined && cls != undefined && type == undefined){
+		//For every character, delete every precondition with this class
+		for(var name in this.characterDB.characters){
+			var char = this.characterDB[name];
+
+			for(var myUID in char.tree.actions){
+				var action = char.tree.actions[myUID];
+
+				for(var i = action.preconditions.length; i > 0; i--){
+					var pre = action.preconditions[i-1];
+
+					if(pre.cls === cls){
+						action.preconditions.splice(i-1, 1);
+					}
+				}
+			}
+		}
+		return;
+	}
+	//8: cls, type
+	if(name == undefined && uid == undefined && cls != undefined && type != undefined){
+		//For every character, delete every precondition with this class and type
+		for(var name in this.characterDB.characters){
+			var char = this.characterDB[name];
+
+			for(var myUID in char.tree.actions){
+				var action = char.tree.actions[myUID];
+
+				for(var i = action.preconditions.length; i > 0; i--){
+					var pre = action.preconditions[i-1];
+
+					if(pre.cls === cls && pre.type === type){
+						action.preconditions.splice(i-1, 1);
+					}
+				}
+			}
+		}
+		return;
+	}
+
+	//If we've gotten to this point, we're not calling a valid combo of paramters
+
+	alert("StoryTree.removePrecondition() Error: The parameter combo of " + (name != undefined ? "name, " : "") + (uid != undefined ? "uid, " : "") 
+		  + (cls != undefined ? "class, " : "") + (type != undefined ? "type " : "") + "is not a valid combination of parameters.");  
 }
 
-//StoryTree.removeExpression(name, cls, type)
+//StoryTree.removeExpression(name, uid, cls, type)
 //Remove a specified expression from a character, or remove some variation
 //ARGUMENTS:
-//	name(string) - the name of the character
+//	name(string or undefined) - the name of the character, if undefined, remove expressions for all characters, specified by other states
+//	uid(int or undefined) - the uid of the action you want to remove, if undefined, remove all expressions for that character, unless class is specified, then remove all of the specified class
 //	cls(string or undefined) - the class of the expression you want to remove, if undefined, remove all expressions
 //	type(string or undefined) - the type of the expression you want to remove, if undefined, remove all of the specified class
 //RETURN void
-StoryTree.prototype.removeExpression = function(name, cls, type){
-	//TODO Implement function
+StoryTree.prototype.removeExpression = function(name, uid, cls, type){
+	//check to see if we're still loading JSON
+	if(!this.isLoaded()){
+		var l = function(){that.removeExpression(name, uid, cls, type)};
+		console.log("Wait 500 ms for the JSONs to load....");
+		window.setTimeout(l, 500);
+		return;
+	}
+
+	//Next, check the formatting of the arguments
+	if(typeof name !== "string" && name != undefined){
+		alert("StoryTree.removeExpression() Error: The argument " + name + "is not of type string.");
+		return;
+	}
+	if(typeof name !== "number" && uid != undefined){
+		alert("StoryTree.removeExpression() Error: The argument " + uid + "is not of type uid.");
+		return;
+	}
+	if(typeof cls !== "string" && cls != undefined){
+		alert("StoryTree.removeExpression() Error: The argument " + cls + "is not of type string.");
+		return;
+	}
+	if(typeof type !== "string" && type != undefined){
+		alert("StoryTree.removeExpression() Error: The argument " + type + "is not of type string.");
+		return;
+	}
+
+	//Check if the character exists
+	if(this.characterDB.getCharacter(name) == undefined && name != undefined){
+		console.log("StoryTree.removeExpression() Warning: The character " + name + " doesn't exist.");
+		return;
+	}
+	//Check if the action exists
+	if(this.characterDB.getCharacter(name).tree.actions[uid] == undefined && uid != undefined){
+		console.log("StoryTree.removeExpressionn() Warning: The uid " + uid + " does not exist for the character " + name);
+		return;
+	}
+
+	//If all undefined, throw an error
+	if(name == undefined && uid == undefined && cls == undefined && type == undefined){
+		alert("StoryTree.removeExpression() Error: No arguments given.");
+		return;
+	}
+
+
+	//Valid states
+	//1: name
+	if(name != undefined && uid == undefined && cls == undefined && type == undefined){
+		//Delete all expressions for each action for a character
+		for(var myUID in this.characterDB.getCharacter(name).tree.actions){
+			var action = this.characterDB.getCharacter(name).tree.actions[myUID];
+			action.expressions = [];
+		}
+		return;
+	}
+	//2: name, uid
+	if(name != undefined && uid != undefined && cls == undefined && type == undefined){
+		//Delete all expressions for specified action
+		this.characterDB.getCharacter(name).tree.actions[uid].expressions = [];
+		return;
+	}
+	//3: name, cls
+	if(name != undefined && uid == undefined && cls != undefined && type == undefined){
+		//Delete all expressions of a character with a specified class, in each action
+		for(var myUID in this.characterDB.getCharacter(name).tree.actions){
+			var action = this.characterDB.getCharacter(name).tree.actions[myUID];
+
+			//Loop through expressions
+			for(var i = action.expressions.length; i > 0; i--){
+				var pre = action.expressions[i-1];
+
+				if(pre.cls === cls){
+					actions.expressions.splice(i-1, 1);
+				}
+			}
+		}
+	}
+	//4: name, cls, type
+	if(name != undefined && uid == undefined && cls != undefined && type != undefined){
+		//Delete all expressions of a character with a specified class, in each action
+		for(var myUID in this.characterDB.getCharacter(name).tree.actions){
+			var action = this.characterDB.getCharacter(name).tree.actions[myUID];
+
+			//Loop through expressions
+			for(var i = action.expressions.length; i > 0; i--){
+				var pre = action.expressions[i-1];
+
+				if(pre.cls === cls && pre.type === type){
+					actions.expressions.splice(i-1, 1);
+				}
+			}
+		}
+		return;
+	}
+	//5: name, uid, cls
+	if(name != undefined && uid != undefined && cls != undefined && type == undefined){
+		//Delete all expressions of a character, for a specific action and class
+		var pres = this.characterDB.getCharacter(name).tree.actions[uid].expressions;
+		for(var i = pres.length; i > 0; i--){
+			var pre = action.expressions[i-1];
+
+			if(pre.cls === cls){
+				pres.splice(i-1, 1);
+			}
+		}
+		return;
+	}
+	//6: name, uid, cls, type
+	if(name != undefined && uid != undefined && cls != undefined && type != undefined){
+		//Delete all expressions of a character, for a specific action and class
+		var pres = this.characterDB.getCharacter(name).tree.actions[uid].expressions;
+		for(var i = pres.length; i > 0; i--){
+			var pre = action.expressions[i-1];
+
+			if(pre.cls === cls && pre.type === type){
+				pres.splice(i-1, 1);
+			}
+		}
+		return;
+	}
+	//7: cls
+	if(name == undefined && uid == undefined && cls != undefined && type == undefined){
+		//For every character, delete every precondition with this class
+		for(var name in this.characterDB.characters){
+			var char = this.characterDB[name];
+
+			for(var myUID in char.tree.actions){
+				var action = char.tree.actions[myUID];
+
+				for(var i = action.expressions.length; i > 0; i--){
+					var pre = action.expressions[i-1];
+
+					if(pre.cls === cls){
+						action.expressions.splice(i-1, 1);
+					}
+				}
+			}
+		}
+		return;
+	}
+	//8: cls, type
+	if(name == undefined && uid == undefined && cls != undefined && type != undefined){
+		//For every character, delete every precondition with this class and type
+		for(var name in this.characterDB.characters){
+			var char = this.characterDB[name];
+
+			for(var myUID in char.tree.actions){
+				var action = char.tree.actions[myUID];
+
+				for(var i = action.expressions.length; i > 0; i--){
+					var pre = action.expressions[i-1];
+
+					if(pre.cls === cls && pre.type === type){
+						action.expressions.splice(i-1, 1);
+					}
+				}
+			}
+		}
+		return;
+	}
+
+	//If we've gotten to this point, we're not calling a valid combo of paramters
+
+	alert("StoryTree.removePrecondition() Error: The parameter combo of " + (name != undefined ? "name, " : "") + (uid != undefined ? "uid, " : "") 
+		  + (cls != undefined ? "class, " : "") + (type != undefined ? "type " : "") + "is not a valid combination of parameters.");  
 }
 
 //StoryTree.remove(thing, arg1, arg2, arg3, arg4)
@@ -930,7 +1258,7 @@ StoryTree.prototype.removeExpression = function(name, cls, type){
 //	arg2(?) - depends on child function being called
 //	arg3(?) - depends on child function being called
 //RETURN void
-StoryTree.prototype.remove = function(thing, arg1, arg2, arg3){
+StoryTree.prototype.remove = function(thing, arg1, arg2, arg3, arg4){
 	//First check format of thing
 	if(typeof thing !== "string"){
 		alert("remove() error: the argument" + thing + " is not of type string.");
@@ -958,10 +1286,10 @@ StoryTree.prototype.remove = function(thing, arg1, arg2, arg3){
 			this.removeAction(arg1, arg2);
 			break;
 		case "precondition":
-			//this.removePrecondition(arg1, arg2, arg3);
+			this.removePrecondition(arg1, arg2, arg3, arg4);
 			break;
 		case "expression":
-			//this.removeExpressions(arg1, arg2, arg3);
+			this.removeExpressions(arg1, arg2, arg3, arg4);
 			break;
 		default:
 			alert("remove() error: the argument" + thing + " is not a recognized type of removable information.");
