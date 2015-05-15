@@ -68,51 +68,58 @@ The Characters are entities within StoryTree that can be given characteristics a
 
 ![alt tag](https://github.com/grnnn/StoryTree/blob/master/Examples/CharacterExample.png)
 
-Characteristics are expressed by SDB values. You can give a character a characteristic by specifying what the class, type, and value is for that characteristic.
-
 Example JSON to populate characters:
 ```json
-{
-	"characters" : ["Becky", "Trish"],
-	"characteristics" : 
-	[
-		{
-			"name" : "Becky", 
-			"class" : "feeling",
-			"type" : "happy",
-			"value" : 4
-		},
-		{
-			"name" : "Becky",
-			"class" : "likes eating",
-			"type" : "cookie",
-			"value" : true
-		},
-		{
-			"name" : "Trish", 
-			"class" : "feeling",
-			"type" : "sad",
-			"value" : 2
-		},
-		{
-			"name" : "Trish",
-			"class" : "likes eating",
-			"type" : "cookies",
-			"value" : false
-		},
-		{
-			"name" : "World", 
-			"class" : "location",
-			"type" : "underwater"
-		},
-		{
-			"name" : "Player",
-			"class" : "owns",
-			"type" : "cookie",
-			"value" : true
-		}
-	]
-}
+["Becky", "Trish", "World", "Player"]
+```
+
+
+Characteristics
+---------------
+
+Characteristics are expressed by SDB values. You can give a character a characteristic by specifying what the class, type, and value is for that characteristic.
+
+Example JSON to populate characteristics:
+```json
+[
+  {
+    "name" : "Becky",
+    "class" : "feeling",
+    "type" : "happy",
+    "value" : 4
+  },
+  {
+    "name" : "Becky",
+    "class" : "likes eating",
+    "type" : "cookie",
+    "value" : true
+  },
+  {
+    "name" : "Trish",
+    "class" : "feeling",
+    "type" : "sad",
+    "value" : 2
+  },
+  {
+    "name" : "Trish",
+    "class" : "likes eating",
+    "type" : "cookie",
+    "value" : false
+  },
+  {
+    "name" : "World",
+    "class" : "location",
+    "type" : "underwater",
+    "value" : true
+  },
+  {
+    "name" : "Player",
+    "class" : "owns",
+    "type" : "cookie",
+    "value" : true
+  }
+]
+
 ```
 
 Action Tree
@@ -271,7 +278,6 @@ Example JSON to populate Action Tree:
 ]
 ```
 
-*Note:* StoryTree reads in a path to a folder for Action Tree population. Each character has a json file that has the exact name of that character (for example, the above json is called Trish.json), and then that JSON file is moved to the folder. StoryTree looks for all characters registered by characters.json when evaluating (Except for "World" and "Player").
 
 Public Functions:
 =================
@@ -284,54 +290,167 @@ var myStoryTree = new StoryTree();
 ```
 
 
-**setSDB** - Populates a StoryTree with a new SDB (Story DataBase) from a JSON file  
-Arguments: String JSONPath
+
+**setSDB** - Populates a StoryTree with a new SDB (Story DataBase) from a JSON file or object.  
 
 js:
 ```javascript
 myStoryTree.setSDB('res/SDB.json');
+myStoryTree.setSDB({"class" : "feeling",
+					"types" : ["happy", "sad", "angry"],
+					"isBoolean" : false,
+					"min" : 0,
+					"max" : 10,
+					"defaultVal" : 5} );
 ```
 
 
-**setCharacters** - Populates a StoryTree with a set of characters, can only be ran after SDB has been populated  
-Arguments: String JSONPath
+
+**setCharacters** - Populates a StoryTree instance with characters with a JSON file or set of strings. 
 
 js:
 ```javascript
 myStoryTree.setCharacters('res/character.json');
+myStoryTree.setCharacters('Trish');
+myStoryTree.setCharacters(['Trish', 'Becky']);
 ```
 
 
-**setTrees** - Populates a StoryTree with a set of trees, with one tree for each character.
-		   There's 1 StoryTree JSON file for each character. Can only be run after setSDB and setCharacters.  
-Arguments: String FolderPath
+
+**setCharacteristics** - Populates a StoryTree instance with characteristics with a JSON file, object, or set of objects.
 
 js:
 ```javascript
-myStoryTree.setTrees('res/StoryTrees/');
+myStoryTree.setCharacteristics('res/characteristics.json');
+myStoryTree.setCharacteristics({"name" : "Becky",
+						        "class" : "feeling",
+						       	"type" : "happy",
+						       	"value" : 4} );
 ```
 
 
-**getOptions** - Given a character and a maximum number of options, 
-		     getOptions will return a set of uids for available actions (leafs on the tree)  
-Arguments: String characterName, int uid
+
+**setActions** - Populates a a character's Action Tree with a JSON file, object, or set of objects.  
+
+js:
+```javascript
+myStoryTree.setActions('Trish', 'res/StoryTrees/trish.json');
+myStoryTree.setActions('Trish',{"name" : "Give Trish a Cookie",
+								"uid" : 15496,
+								"first" : true,
+								"class" : "Give Cookie",
+								"preconditions" : 
+								[
+									{
+										"character" : "Player",
+										"class" : "owns",
+										"type" : "cookie",
+										"operation" : "==",
+										"value" : true
+									}
+								],
+								"expressions" :
+								[
+									{
+										"character" : "Trish",
+										"class" : "owns",
+										"type" : "cookie",
+										"operation" : "=",
+										"value" : true
+									},
+									{
+										"character" : "Player",
+										"class" : "owns",
+										"type" : "cookie",
+										"operation" : "=",
+										"value" : false
+									}
+								],
+								"leadsTo": 
+								[
+									15497, 15498
+								]} );
+```
+
+
+
+**setPreconditions** - Populates a character action with preconditions given a character, action id, and a JSON file (or object or set of objects).
+
+js:
+```javascript
+myStoryTree.setPreconditions('Trish', 15496, 'res/Preconditions/15496.json');
+myStoryTree.setPreconditions('Trish', 15496, {"character" : "Player",
+											  "class" : "owns",
+											  "type" : "cookie",
+											  "operation" : "==",
+											  "value" : true
+										     } );
+```
+
+
+
+**setExpressions** - Populates a character action with expressions given a character, action id, and a JSON file (or object or set of objects).
+
+js:
+```javascript
+myStoryTree.setPreconditions('Trish', 15496, 'res/Preconditions/15496.json');
+myStoryTree.setPreconditions('Trish', 15496, {"character" : "Player",
+											  "class" : "owns",
+											  "type" : "cookie",
+											  "operation" : "=",
+											  "value" : false
+											 } );
+```
+
+
+
+**set** - Can be used to call any "set" function in a StoryTree instance.
+
+js:
+```javascript
+myStoryTree.set('characters', 'res/characters.json'); 
+myStoryTree.set('SDB', {"class" : "feeling",
+						"types" : ["happy", "sad", "angry"],
+						"isBoolean" : false,
+						"min" : 0,
+						"max" : 10,
+						"defaultVal" : 5}); 
+myStoryTree.set('actions', 'Trish', 'res/StoryTrees/Trish.json');
+```
+
+
+
+**remove** - Can be used to call any "remove" function in a StoryTree instance.
+
+js:
+```javascript
+myStoryTree.remove('character', 'John'); //removes the character 'John'
+myStoryTree.remove('sdb', 'Feeling'); //removes the SDB class of 'feeling'
+```
+
+
+
+**getOptions** - Given a character and a maximum number of options, getOptions will return a set of uid paths (each a set) for available actions.
 
 js:
 ```javascript
 var options = myStoryTree.getOptions("Trish", 3);
+console.log(options); //[ [14925],
+					  //  [14932, 14934] ]
 ```
+
 
 
 **getActionName** - Given a character and a uid for an action, return the name of the action
-Arguments: String characterName, int uid
 
 js:
 ```javascript
-var name = myStoryTree.getActionName("Trish", options[0]);
+var name = myStoryTree.getActionName("Trish", options[0][1]);
 ```
 
 
-**isLoaded** - Can tell if any JSON libraries are still loading, StoryTree shouldn't be used if anything is loading
+
+**isLoaded** - Can tell if any JSON files are still loading, StoryTree shouldn't be used if anything is loading.
 
 js:
 ```javascript
@@ -341,13 +460,14 @@ if(myStoryTree.isLoaded()){
 ```
 
 
-**executeAction** - Given a character and a uid, execute an action in StoryTree  
-Arguments: String characterName, int uid
+
+**executeAction** - Given a character and a uid path (a set), execute an action in StoryTree  
 
 js:
 ```javascript
 myStoryTree.executeAction("Trish", options[0]);
 ```
+
 
 
 **getCharacters** - Returns a set of characters available in the Story Tree
@@ -356,6 +476,7 @@ js:
 ```javascript
 var characters = myStoryTree.getCharacters();
 ```
+
 
 
 **getCharacteristics** - Given a character, return the characteristics of that character  
